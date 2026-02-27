@@ -1,0 +1,30 @@
+{
+  "name": "@narduk/eslint-config",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./eslint.config.mjs"
+  },
+  "scripts": {
+    "build": "pnpm run build:nuxt-ui && pnpm run build:guardrails && pnpm run build:vue-official",
+    "build:nuxt-ui": "cd eslint-plugin-nuxt-ui && pnpm run build",
+    "build:guardrails": "cd eslint-plugin-nuxt-guardrails && pnpm run build",
+    "build:vue-official": "cd eslint-plugin-vue-official-best-practices && pnpm run build"
+  },
+  "dependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-regexp": "^3.0.0",
+    "eslint-plugin-security": "^4.0.0",
+    "eslint-plugin-unicorn": "^63.0.0",
+    "typescript-eslint": "^8.56.1",
+    "vue-eslint-parser": "^10.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.13",
+    "eslint": "^10.0.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

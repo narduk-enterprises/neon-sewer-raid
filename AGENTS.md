@@ -1,0 +1,400 @@
+# AGENTS.md — AI Agent Instructions
+
+> **🚨 CRITICAL: DO NOT PUSH TO `loganrenz/nuxt-v4-template` 🚨**
+>
+> This is a **read-only template repository**. Before writing ANY code, you MUST create your own repo:
+>
+> ```bash
+> git clone https://github.com/loganrenz/nuxt-v4-template-monorepo.git <project-name>
+> cd <project-name>
+> pnpm install
+> ```
+>
+> **Verify your remote** with `git remote -v` — it must NOT point to `loganrenz/nuxt-v4-template`.
+
+This is a **minimal Nuxt 4 + Nuxt UI 4** boilerplate deployed to **Cloudflare Workers** with **D1 SQLite** (Drizzle ORM).
+
+> **⚠️ ARCHITECTURE UPDATE:** This repository is now a **PNPM Workspace Monorepo**. The application lives in `apps/web/` and extends the local layer inside `layers/narduk-nuxt-layer/`. This allows you to rapidly iterate on both the app and the shared library simultaneously.
+> When building an app using this template, DO NOT recreate standard Nuxt UI components. Rely on the inherited layer.
+
+For full-featured example implementations (auth, analytics, blog, dashboard, forms, etc.), see the companion app in **`apps/examples/`**.
+
+## Project Structure (PNPM Workspace)
+
+This repository functions as a single **PNPM Workspace** managing both the web application and the shared layer.
+
+```
+pnpm-workspace.yaml    # Workspace root config
+package.json           # Global scripts (pnpm run dev, pnpm run quality)
+AGENTS.md              # Global AI coding guidelines
+.agents/               # Saved AI workflows
+apps/
+  web/                 # The main Nuxt 4 application
+    app/               # App UI (pages, components, layouts)
+    server/            # Edge API endpoints and D1 database handling
+    nuxt.config.ts     # Extends the local layer
+    package.json
+layers/
+  narduk-nuxt-layer/   # The centralized business logic and UI layer
+    app/               # Shared components, composables, plugins, types
+    server/            # Centralized API logic and database schemas
+    nuxt.config.ts
+```
+
+_Note: You can still create `app/components/`, `server/api/`, etc., in `apps/web/`, but ensure you aren't duplicating something that already exists in the Layer._
+
+## Hard Constraints (Cloudflare Workers)
+
+- **NO Node.js modules** — no `fs`, `path`, `crypto`, `bcrypt`, `child_process`
+- **Use Web Crypto API** — `crypto.subtle` for all hashing (PBKDF2)
+- **Nitro preset** is `cloudflare-module` (ES Module format, V8 isolates)
+- **Drizzle ORM only** — no Prisma or other Node-dependent ORMs
+- All server code must be stateless across requests (edge isolate model)
+
+## Nuxt UI 4 Rules
+
+- `UDivider` → renamed to **`USeparator`** in v4
+- Icons use `i-` prefix: `i-lucide-home`, not `name="heroicons-..."`
+- Use design token colors (`primary`, `neutral`) not arbitrary color strings
+- Tailwind CSS 4 — configure via `@theme` in `main.css`, not `tailwind.config`
+
+## SEO (Required on Every Page)
+
+Every page **must** call both:
+
+```ts
+useSeo({
+  title: '...',
+  description: '...',
+  ogImage: { title: '...', description: '...', icon: '🎯' },
+});
+useWebPageSchema({ name: '...', description: '...' }); // or useArticleSchema, useProductSchema, etc.
+```
+
+Sitemap and robots.txt are automatic. OG image templates live in `app/components/OgImage/`.
+
+## Architecture Patterns
+
+- **Commit often** — make small, focused commits after each meaningful change (new feature, bug fix, refactor). Do not accumulate large uncommitted changesets. Each commit message should follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, etc.).
+- **Thin Components, Thick Composables** — components subscribe to composables, pass props down, emit events up. No inline fetch or complex logic in templates.
+- **SSR-safe state** — use `useState()` or Pinia stores. Never use bare `ref()` at module scope (causes cross-request leaks).
+- **Data fetching** — always use `useAsyncData` or `useFetch`, never raw `$fetch` in `<script setup>`.
+- **Client-only code** — wrap `window`/`document` access in `onMounted` or `<ClientOnly>`.
+
+## Starting a New Project from This Template
+
+1. Clone the repository: `git clone https://github.com/loganrenz/nuxt-v4-template-monorepo.git my-app`
+2. Install dependencies: `pnpm install`
+3. Remove the git origin: `git remote remove origin`
+4. Update `nuxt.config.ts` in `apps/web/` with your domain and site name.
+5. Set up secrets in **Doppler** (see Secrets recipe below).
+6. Run `pnpm run dev` to start building.
+
+## 🚨 CRITICAL RULE: NEVER COMMIT TO THIS REPOSITORY 🚨
+
+If you are an agent building a new project inside a clone of this repository, **DO NOT COMMIT OR PUSH** directly back to `loganrenz/nuxt-v4-template`. Verify the user has set up a new remote origin first.
+
+## Quality Audit Workflows
+
+Run these during development (Antigravity slash-commands):
+
+| Workflow                  | Purpose                                                    |
+| ------------------------- | ---------------------------------------------------------- |
+| `/check-nuxt-ui-v4`       | Validates UI 4 component usage                             |
+| `/check-nuxt-ssr`         | Validates SSR-safe data fetching and hydration             |
+| `/check-store-separation` | Validates thin component / thick composable pattern        |
+| `/check-nitro-edge`       | Validates Cloudflare Workers compatibility                 |
+| `/check-seo-compliance`   | Audits pages for useSeo, Schema.org, and OG images         |
+| `/check-data-fetching`    | Catches waterfalls, raw $fetch, and N+1 queries            |
+| `/check-css-tokens`       | Audits Tailwind v4 import order, tokens, and deprecated    |
+| `/check-plugin-lifecycle` | Audits plugin naming, lifecycle safety, and analytics      |
+| `/check-types-services`   | Audits Thin Store decomposition (types/services/sizes)     |
+| `/check-hydration-safety` | Deep hydration audit (isHydrated, ClientOnly, DOM nesting) |
+| `/migrate-to-layer`       | Migration workflow to convert legacy apps to this layer    |
+
+## ESLint Plugins (Automated Enforcement)
+
+These workspace-local ESLint plugins enforce patterns at lint time. Run `pnpm run build:plugins` after cloning to build the TypeScript plugins.
+
+| Plugin                                      | Rules | What It Enforces                                                                 |
+| ------------------------------------------- | ----- | -------------------------------------------------------------------------------- |
+| `eslint-plugin-nuxt-ui`                     | 7     | Nuxt UI v4 props, slots, events, variants, deprecated API usage                  |
+| `eslint-plugin-nuxt-guardrails`             | 7     | SSR DOM access, legacy head/fetch, `import.meta.client`, `useAsyncData`          |
+| `eslint-plugin-atx`                         | 24    | Design system: prefer UButton/ULink, no inline hex, Lucide icons, Zod validation |
+| `eslint-plugin-vue-official-best-practices` | 13    | Composition API, Pinia patterns, typed defineProps, `use` prefix                 |
+
+**Build:** `pnpm run build:plugins` (ATX plugin is plain `.mjs` — no build needed).
+
+---
+
+# 📖 Recipes
+
+These are opt-in feature recipes. Follow them when the project needs a specific capability. For working reference implementations of each, refer to the **`apps/examples/`** application.
+
+---
+
+## 🚀 Initialization Routine (New Projects)
+
+**When:** You have just cloned this template to begin a new application.
+**CRITICAL:** This must be your very first step before writing any code.
+
+**Steps:**
+
+1. Run the mass-replacer script from the root directory:
+   ```bash
+   npm run init -- --name="your-app-name" --display="Your Display Name" --url="https://yoururl.com"
+   ```
+   _(This will rename the project, create the Cloudflare D1 database, spin up the Doppler project, rewrite `wrangler.json`, and then self-destruct.)_
+2. Configure your Doppler secrets (see Secrets & Env below).
+3. Pull Doppler secrets and initialize the local database schema (non-interactive):
+   ```bash
+   doppler setup --project <app-name> --config dev && npm run db:migrate
+   ```
+4. Commit the initialization.
+
+---
+
+## 🔑 Recipe: Secrets & Environment (Doppler)
+
+**When:** Always. This is the standard for all projects.
+
+**Principle:** Doppler is the single source of truth for all secrets and environment variables. **Never** create `.env` or `.env.example` files. Never commit secrets. Never commit `doppler.yaml` (it is git-ignored).
+
+**Steps:**
+
+1. Create a Doppler project: `doppler projects create <app-name>`
+2. Wire Doppler into your dev workflow (generates `doppler.yaml`):
+   ```bash
+   doppler setup --project <app-name> --config dev
+   doppler run -- npm run dev  # Injects env vars at runtime
+   ```
+3. In `nuxt.config.ts`, declare all secrets in `runtimeConfig` with explicit `process.env.KEY` access:
+   ```ts
+   runtimeConfig: {
+     secretKey: process.env.SECRET_KEY || '',        // Server-only
+     public: {
+       appUrl: process.env.SITE_URL || '',           // Client-safe
+     },
+   }
+   ```
+4. **Important:** Doppler env var names are the **raw key names** (e.g. `POSTHOG_PUBLIC_KEY`, `SITE_URL`). They do **NOT** use the `NUXT_` prefix. The `nuxt.config.ts` reads them directly via `process.env.KEY` at build time.
+
+### Enterprise Hub-and-Spoke Architecture
+
+All template derivatives use **Doppler Cross-Project Secret Referencing** to avoid duplicating sensitive keys. **Never** copy/paste secret values between projects manually.
+
+#### Hub Projects (shared infrastructure — you do NOT create these)
+
+| Hub Project              | Purpose                          | Secrets It Owns                                                                                                                     |
+| ------------------------ | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `narduk-enterprise-apps` | Cloud infrastructure credentials | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`                                                                                     |
+| `narduk-analytics`       | Centralized analytics management | `POSTHOG_PUBLIC_KEY`, `POSTHOG_PROJECT_ID`, `POSTHOG_HOST`, `POSTHOG_PERSONAL_API_KEY`, `GA_ACCOUNT_ID`, `GSC_SERVICE_ACCOUNT_JSON` |
+
+#### App Spoke Projects (one per app — created by `init.ts`)
+
+Each app gets its own Doppler project (e.g. `my-cool-app`). The spoke inherits credentials from hubs using **cross-project references**, plus stores its own per-app secrets.
+
+**Doppler cross-project reference syntax:**
+
+```
+${<hub-project>.<config>.<KEY>}
+```
+
+**Example:** To reference the Cloudflare API token from the enterprise hub:
+
+```bash
+doppler secrets set CLOUDFLARE_API_TOKEN='${narduk-enterprise-apps.prd.CLOUDFLARE_API_TOKEN}' --project my-app --config prd
+```
+
+#### Complete Secret Reference Table
+
+| Secret                  | Source                                           | Config | Notes                                           |
+| ----------------------- | ------------------------------------------------ | ------ | ----------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | `← narduk-enterprise-apps` hub ref               | `prd`  | Deploy credential                               |
+| `CLOUDFLARE_ACCOUNT_ID` | `← narduk-enterprise-apps` hub ref               | `prd`  | Deploy credential                               |
+| `POSTHOG_PUBLIC_KEY`    | `← narduk-analytics` hub ref                     | `prd`  | Shared across all apps (single PostHog project) |
+| `POSTHOG_PROJECT_ID`    | `← narduk-analytics` hub ref                     | `prd`  | Shared across all apps                          |
+| `POSTHOG_HOST`          | `← narduk-analytics` hub ref                     | `prd`  | Defaults to `https://us.i.posthog.com`          |
+| `APP_NAME`              | Per-app (set by `init.ts`)                       | `prd`  | Differentiates apps in PostHog events           |
+| `SITE_URL`              | Per-app                                          | `prd`  | e.g. `https://myapp.com`                        |
+| `GA_MEASUREMENT_ID`     | Per-app (auto-generated by `setup-analytics.ts`) | `prd`  | `G-XXXXXXX`                                     |
+| `INDEXNOW_KEY`          | Per-app (auto-generated by `setup-analytics.ts`) | `prd`  | 32-char hex                                     |
+| `GA_PROPERTY_ID`        | Per-app (auto-generated)                         | `prd`  | GA4 property identifier                         |
+| `GSC_USER_EMAIL`        | Per-app                                          | `prd`  | Google account email for GSC access             |
+
+#### Dev vs. Prd Configs
+
+- **`dev` config:** Select this when running `doppler setup` locally. Hub references resolve automatically. You can override any key for local testing without affecting production.
+- **`prd` config:** Used by CI/CD (`deploy.yml`). The `init.ts` script provisions hub references in `prd` only. The `DOPPLER_TOKEN` GitHub secret is scoped to `prd`.
+- **`stg` config:** Available if needed; not provisioned by default.
+
+#### CI/CD Flow
+
+1. `init.ts` creates a Doppler service token (`ci-deploy`) scoped to `<app-name>/prd`
+2. The token is stored as `DOPPLER_TOKEN` GitHub Actions secret
+3. On push to `main`, `deploy.yml` installs the Doppler CLI, fetches **all resolved secrets** (hub refs are resolved server-side), and injects them into `$GITHUB_ENV`
+4. `pnpm build` and `wrangler deploy` run with full access to all secrets
+
+**Reference:** See `apps/examples/nuxt.config.ts` for the full runtimeConfig block.
+
+---
+
+## 🧪 Recipe: Testing (Vitest + Playwright)
+
+**When:** You need unit tests for composables or E2E tests for user flows.
+
+**Steps:**
+
+1. Install dependencies:
+
+   ```bash
+   npm install -D vitest @nuxt/test-utils happy-dom playwright @playwright/test
+   npx playwright install chromium
+   ```
+
+2. Create `vitest.config.ts`:
+
+   ```ts
+   import { defineVitestConfig } from '@nuxt/test-utils/config';
+   export default defineVitestConfig({});
+   ```
+
+3. Create `playwright.config.ts`:
+
+   ```ts
+   import { defineConfig, devices } from '@playwright/test';
+   export default defineConfig({
+     testDir: './tests/e2e',
+     fullyParallel: true,
+     forbidOnly: !!process.env.CI,
+     retries: process.env.CI ? 2 : 0,
+     reporter: 'html',
+     use: { baseURL: 'http://localhost:3000', trace: 'on-first-retry' },
+     webServer: {
+       command: 'npx nuxi dev --port 3000',
+       url: 'http://localhost:3000',
+       reuseExistingServer: !process.env.CI,
+       timeout: 120_000,
+     },
+     projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+   });
+   ```
+
+4. Add npm scripts to `package.json`:
+
+   ```json
+   "test:unit": "vitest run",
+   "test:e2e": "playwright test"
+   ```
+
+5. Place unit tests in `tests/composables/`, E2E tests in `tests/e2e/`.
+
+**Reference:** See `apps/examples/tests/` for example test files.
+
+---
+
+## 🔒 Recipe: Authentication (Web Crypto + D1 Sessions)
+
+**When:** Your app needs user accounts, login, and protected routes.
+
+**Steps:**
+
+1. Add auth tables to `server/database/schema.ts` (users + sessions tables with Drizzle).
+2. Create `server/utils/auth.ts` — PBKDF2 password hashing using `crypto.subtle` (NOT bcrypt).
+3. Create API routes: `server/api/auth/login.post.ts`, `register.post.ts`, `logout.post.ts`, `me.get.ts`.
+4. Create `app/composables/useAuth.ts` — reactive auth state backed by `useState()`.
+5. Create `app/middleware/auth.ts` — route guard that redirects unauthenticated users.
+
+**Key constraint:** All crypto MUST use Web Crypto API (`crypto.subtle.deriveKey` with PBKDF2). Node.js `crypto` and `bcrypt` are forbidden on Cloudflare Workers.
+
+**Reference:** See `apps/examples/server/utils/` and `apps/examples/app/composables/useAuth.ts` (Note: some utils like auth are inherited from the layer).
+
+---
+
+## � Recipe: Analytics (PostHog + GA4 + GSC + IndexNow)
+
+**When:** You need product analytics, web analytics, and search engine integration.
+
+**Steps:**
+
+1. **PostHog:** Already wired.
+2. **GA4:** Already wired.
+3. **IndexNow:** Already wired.
+4. **Google Search Console:** Use the setup automation in the examples app.
+
+All plugins **no-op gracefully** when their keys are empty — safe for dev without any Doppler config.
+
+**Automated setup:** The examples app includes `tools/setup-analytics.ts` which bootstraps GA4 and GSC via API.
+
+**Doppler architecture:** Universal management keys live in the `narduk-analytics` Doppler project. Per-app keys go in the app's own Doppler project. You must reference the exact `POSTHOG_PUBLIC_KEY` and `POSTHOG_PROJECT_ID` from the analytics hub.
+
+> **⚠️ WARNING: PostHog Workspaces**
+> Do not create a separate project workspace inside PostHog for each new app unless specifically requested! The expected behavior is that ALL template apps log to the single "Narduk Analytics" master project in PostHog. The apps are differentiated using the `app:` property attached to every event by the client plugin.
+> Ensure your Doppler environment references the `narduk-analytics` keys directly.
+
+---
+
+## 📝 Recipe: Content & Blog (Nuxt Content v3)
+
+**When:** Your app needs a blog, documentation, or markdown-based content.
+
+**Steps:**
+
+1. `@nuxt/content` is already in the template. Create markdown files in `content/`.
+2. Create a blog layout: `app/layouts/blog.vue` with sidebar + header chrome.
+3. Create blog pages: `app/pages/blog/index.vue` (list) and `app/pages/blog/[slug].vue` (detail).
+4. Query content with `queryCollection('content')` in `useAsyncData`.
+5. Render with `<ContentRenderer :value="post" />`.
+
+**Key gotcha:** On Cloudflare Workers, Nuxt Content auto-switches to D1 database storage. Make sure the `DB` binding is configured in `wrangler.json`.
+
+**Reference:** See `apps/examples/content/templates/blog/` and `apps/examples/app/pages/templates/blog/`.
+
+---
+
+## 🎯 Recipe: Linting & Code Quality
+
+**When:** Setting up ESLint for a new project.
+
+**Steps:**
+
+1. Install: `npm install -D @nuxt/eslint eslint`
+2. Add to `nuxt.config.ts` modules: `'@nuxt/eslint'`
+3. Create `eslint.config.mjs`:
+   ```js
+   import withNuxt from './.nuxt/eslint.config.mjs';
+   export default withNuxt();
+   ```
+4. Add script: `"lint": "eslint ."` / `"lint:fix": "eslint . --fix"`
+
+**Runtime audits:** Use the built-in `/check-*` workflows (see Quality Audit Workflows above) to validate Nuxt UI v4 compliance, SSR safety, store separation, and edge compatibility.
+
+---
+
+## 🎨 Recipe: UI Components (Landing Pages, Dashboards)
+
+**When:** You need pre-built UI sections like heroes, pricing tables, testimonials, contact forms, or dashboard layouts.
+
+**Steps:**
+
+1. Browse the components in `apps/examples/app/components/ui/` — includes `HeroSection`, `FeatureGrid`, `PricingTable`, `TestimonialCarousel`, `ContactForm`, `CTABanner`.
+2. Browse layouts in `apps/examples/app/layouts/` — includes `blog.vue`, `dashboard.vue`, `landing.vue`.
+3. Copy what you need into your project's `app/components/` or `app/layouts/`.
+4. Customize colors via `app/app.config.ts` and fonts via `app/assets/css/main.css`.
+
+**Reference:** See `apps/examples/app/components/ui/` for the full set.
+
+---
+
+## 🛠️ Recipe: Form Handling
+
+**When:** You need validated forms with Zod and consistent styling.
+
+**Steps:**
+
+1. Use Nuxt UI's native `<UForm :schema :state>` with Zod validation.
+2. Connect fields via `<UFormField name="...">`.
+3. For consistent card chrome, create an `AppFormCard` wrapper component.
+4. Use layout utility classes in `main.css`: `.form-section` (vertical gap), `.form-row` (2-col grid), `.form-actions` (button alignment).
+
+**Reference:** See `apps/examples/app/components/AppFormCard.vue` and `apps/examples/app/composables/useFormHandler.ts`.

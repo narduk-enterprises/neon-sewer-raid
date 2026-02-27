@@ -1,0 +1,29 @@
+{
+  "name": "nuxt-v4-template-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --filter web dev",
+    "build": "pnpm -r build",
+    "build:plugins": "pnpm --filter @narduk/eslint-config build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "quality": "pnpm -r quality",
+    "init": "jiti tools/init.ts",
+    "validate": "jiti tools/validate.ts"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "better-sqlite3",
+      "core-js",
+      "esbuild",
+      "protobufjs",
+      "sharp",
+      "vue-demi",
+      "workerd"
+    ]
+  },
+  "volta": {
+    "node": "22.22.0"
+  }
+}
