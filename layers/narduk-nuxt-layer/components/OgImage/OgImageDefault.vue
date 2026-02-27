@@ -19,7 +19,7 @@ withDefaults(defineProps<{
   title: 'Nuxt 4 Template',
   description: 'Production-ready Nuxt 4 + Cloudflare Workers',
   icon: '✨',
-  siteName: 'Nuxt 4 Demo',
+  siteName: 'Neon Sewer Raid',
 })
 </script>
 

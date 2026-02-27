@@ -3,7 +3,7 @@
 > **🚨 CRITICAL: THIS IS A NUXT LAYER 🚨**
 >
 > You are working inside **`loganrenz/narduk-nuxt-layer`**. This is NOT an application that gets deployed to production directly.
-> This is a shared library/layer that downstream applications (like `nuxt-v4-template` or `circuit-breaker-online`) extend using `extends: ['github:loganrenz/narduk-nuxt-layer#main']`.
+> This is a shared library/layer that downstream applications (like `neon-sewer-raid` or `circuit-breaker-online`) extend using `extends: ['github:loganrenz/narduk-nuxt-layer#main']`.
 >
 > **When to edit files here:**
 >
@@ -82,7 +82,7 @@ Sitemap and robots.txt are automatic. OG image templates live in `app/components
 
 If you are an agent tasked with adding this layer to a new or existing Nuxt application, run the `/migrate-to-layer` workflow.
 
-Do **NOT** clone `narduk-nuxt-layer` directly to start a project. Start with `nuxt-v4-template` instead.
+Do **NOT** clone `narduk-nuxt-layer` directly to start a project. Start with `neon-sewer-raid` instead.
 
 ## Quality Audit Workflows
 

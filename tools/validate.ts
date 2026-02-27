@@ -34,8 +34,8 @@ async function main() {
   const APP_NAME = packageJson.name
 
   let allGood = true
-  if (!APP_NAME || APP_NAME === 'nuxt-v4-template') {
-    console.error(`  ❌ Project name is still 'nuxt-v4-template'. Has init been run?`)
+  if (!APP_NAME || APP_NAME === 'neon-sewer-raid') {
+    console.error(`  ❌ Project name is still 'neon-sewer-raid'. Has init been run?`)
     allGood = false
   }
 
@@ -126,7 +126,7 @@ async function main() {
   try {
     const remotesOutput = execSync('git remote -v', { encoding: 'utf-8', stdio: 'pipe' })
     const remotes = remotesOutput.split('\n').filter(Boolean)
-    const targetRemoteLine = remotes.find(line => !line.includes('nuxt-v4-template') && line.includes('(push)'))
+    const targetRemoteLine = remotes.find(line => !line.includes('neon-sewer-raid') && line.includes('(push)'))
     if (targetRemoteLine) {
       let url = targetRemoteLine.split(/\s+/)[1]
       url = url.replace(/^(https?:\/\/|git@)/, '').replace(/^github\.com[:/]/, '').replace(/\.git$/, '')

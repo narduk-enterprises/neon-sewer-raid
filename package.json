@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-v4-template-monorepo",
+  "name": "neon-sewer-raid-monorepo",
   "private": true,
   "scripts": {
     "dev": "pnpm -r --filter web dev",
@@ -25,5 +25,9 @@
   },
   "volta": {
     "node": "22.22.0"
+  },
+  "devDependencies": {
+    "google-auth-library": "^10.6.1",
+    "googleapis": "^171.4.0"
   }
 }

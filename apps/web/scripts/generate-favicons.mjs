@@ -70,7 +70,7 @@ async function generate() {
 
   // site.webmanifest
   const manifest = {
-    name: 'Nuxt 4 Demo',
+    name: 'Neon Sewer Raid',
     short_name: 'N4 Demo',
     icons: [
       { src: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },

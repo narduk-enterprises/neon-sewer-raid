@@ -1,10 +1,10 @@
 ---
-description: Migrate a flat Nuxt 4 app from ~/code into the nuxt-v4-template monorepo architecture
+description: Migrate a flat Nuxt 4 app from ~/code into the neon-sewer-raid monorepo architecture
 ---
 
 # Migrate Existing Repo to Monorepo Template
 
-> **Scope:** This workflow converts a flat Nuxt 4 application (one of the ~10 repos in `~/code`) into a **new repository** by cloning the `nuxt-v4-template` monorepo scaffold and copying the app code into `apps/web/`.
+> **Scope:** This workflow converts a flat Nuxt 4 application (one of the ~10 repos in `~/code`) into a **new repository** by cloning the `neon-sewer-raid` monorepo scaffold and copying the app code into `apps/web/`.
 
 // turbo-all
 
@@ -12,7 +12,7 @@ description: Migrate a flat Nuxt 4 app from ~/code into the nuxt-v4-template mon
 
 ## Prerequisites — Confirm Before Starting
 
-1. Read `~/code/nuxt-v4-template/AGENTS.md` in full. This is the golden reference.
+1. Read `~/code/neon-sewer-raid/AGENTS.md` in full. This is the golden reference.
 2. Determine if the source repo is a Nuxt 4 app (has `nuxt.config.ts`). If not, STOP and notify the user.
 3. Identify the source repo name, e.g. `papa-everetts-pizza`. Determine the new project name, e.g. `papa-everetts-pizza-v2`.
 
@@ -23,10 +23,10 @@ description: Migrate a flat Nuxt 4 app from ~/code into the nuxt-v4-template mon
 1. Navigate to the source repository and clone the template into a sub-directory:
    ```bash
    cd ~/code/<source>
-   git clone https://github.com/loganrenz/nuxt-v4-template.git ./<project-name>-v2
+   git clone https://github.com/loganrenz/neon-sewer-raid.git ./<project-name>-v2
    cd ./<project-name>-v2
    rm -rf .git
-   git init && git add . && git commit -m "chore: scaffold from nuxt-v4-template"
+   git init && git add . && git commit -m "chore: scaffold from neon-sewer-raid"
    ```
 2. Run the init script to rename everything:
    ```bash

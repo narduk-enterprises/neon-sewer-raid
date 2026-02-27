@@ -1,16 +1,16 @@
 # AGENTS.md — AI Agent Instructions
 
-> **🚨 CRITICAL: DO NOT PUSH TO `loganrenz/nuxt-v4-template` 🚨**
+> **🚨 CRITICAL: DO NOT PUSH TO `loganrenz/neon-sewer-raid` 🚨**
 >
 > This is a **read-only template repository**. Before writing ANY code, you MUST create your own repo:
 >
 > ```bash
-> git clone https://github.com/loganrenz/nuxt-v4-template-monorepo.git <project-name>
+> git clone https://github.com/loganrenz/neon-sewer-raid-monorepo.git <project-name>
 > cd <project-name>
 > pnpm install
 > ```
 >
-> **Verify your remote** with `git remote -v` — it must NOT point to `loganrenz/nuxt-v4-template`.
+> **Verify your remote** with `git remote -v` — it must NOT point to `loganrenz/neon-sewer-raid`.
 
 This is a **minimal Nuxt 4 + Nuxt UI 4** boilerplate deployed to **Cloudflare Workers** with **D1 SQLite** (Drizzle ORM).
 
@@ -83,7 +83,7 @@ Sitemap and robots.txt are automatic. OG image templates live in `app/components
 
 ## Starting a New Project from This Template
 
-1. Clone the repository: `git clone https://github.com/loganrenz/nuxt-v4-template-monorepo.git my-app`
+1. Clone the repository: `git clone https://github.com/loganrenz/neon-sewer-raid-monorepo.git my-app`
 2. Install dependencies: `pnpm install`
 3. Remove the git origin: `git remote remove origin`
 4. Update `nuxt.config.ts` in `apps/web/` with your domain and site name.
@@ -92,7 +92,7 @@ Sitemap and robots.txt are automatic. OG image templates live in `app/components
 
 ## 🚨 CRITICAL RULE: NEVER COMMIT TO THIS REPOSITORY 🚨
 
-If you are an agent building a new project inside a clone of this repository, **DO NOT COMMIT OR PUSH** directly back to `loganrenz/nuxt-v4-template`. Verify the user has set up a new remote origin first.
+If you are an agent building a new project inside a clone of this repository, **DO NOT COMMIT OR PUSH** directly back to `loganrenz/neon-sewer-raid`. Verify the user has set up a new remote origin first.
 
 ## Quality Audit Workflows
 

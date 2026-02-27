@@ -1,21 +1,29 @@
 {
   "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/schemas/config/wrangler.json",
-  "name": "nuxt-v4-template",
+  "name": "neon-sewer-raid",
   "main": ".output/server/index.mjs",
   "assets": {
     "directory": ".output/public"
   },
   "compatibility_date": "2025-07-15",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "observability": {
     "enabled": true
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "nuxt-v4-template-db",
+      "database_name": "neon-sewer-raid-db",
       "database_id": "83b9f319-c34e-4625-9c08-1eb384d9d36d",
       "preview_database_id": "DB"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "neon-sewer-raid.app",
+      "custom_domain": true
     }
   ]
 }
