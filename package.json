@@ -40,5 +40,6 @@
   "devDependencies": {
     "google-auth-library": "^10.6.1",
     "googleapis": "^171.4.0"
-  }
+  },
+  "version": "0.0.1"
 }
