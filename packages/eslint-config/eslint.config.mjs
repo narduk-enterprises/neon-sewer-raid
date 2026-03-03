@@ -24,6 +24,10 @@ import regexp from 'eslint-plugin-regexp'
  *   import { sharedConfigs } from '@narduk/eslint-config'
  *   export default withNuxt(...sharedConfigs)
  */
+// Re-export the atx plugin so consuming apps can reference it in their own
+// config objects when overriding atx rule severities.
+export { default as atxPlugin } from './eslint-plugins/index.mjs'
+
 export const sharedConfigs = [
   // Vue files: use vue-eslint-parser with TypeScript parser for script blocks
   {
@@ -57,6 +61,9 @@ export const sharedConfigs = [
 
   // ATX design-system rules (all .vue files)
   ...atx.configs.recommended,
+
+  // ATX app architecture (composables, utils, stores)
+  ...atx.configs.app,
 
   // ATX server safety rules (server/**/*.ts)
   ...atx.configs.server,
@@ -113,7 +120,7 @@ export const sharedConfigs = [
     rules: {
       'no-unused-vars': 'off',
       'no-debugger': 'warn',
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {

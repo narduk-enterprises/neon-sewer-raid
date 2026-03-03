@@ -9,7 +9,12 @@
     "typecheck": "pnpm -r typecheck",
     "quality": "pnpm -r quality",
     "init": "jiti tools/init.ts",
-    "validate": "jiti tools/validate.ts"
+    "validate": "jiti tools/validate.ts",
+    "predev": "node tools/check-setup.js",
+    "prebuild": "node tools/check-setup.js",
+    "predeploy": "node tools/check-setup.js",
+    "update-layer": "npx tsx tools/update-layer.ts",
+    "generate:favicons": "npx tsx tools/generate-favicons.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
