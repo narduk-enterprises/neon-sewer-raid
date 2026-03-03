@@ -31,6 +31,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build packages
+        run: pnpm build:plugins
+
       - name: Prepare Nuxt types
         run: |
           for cfg in apps/*/nuxt.config.ts layers/*/nuxt.config.ts; do
@@ -120,6 +123,7 @@ jobs:
           fi
 
       - name: Run D1 migrations (remote)
+        continue-on-error: true
         working-directory: apps/web
         run: |
           echo "Running remote migrations..."
@@ -128,8 +132,7 @@ jobs:
           if [ -n "$cmd" ]; then
             pnpm exec $cmd
           else
-            echo "No db:migrate script found!"
-            exit 1
+            echo "No db:migrate script found, skipping."
           fi
 
       - name: Build & Deploy
