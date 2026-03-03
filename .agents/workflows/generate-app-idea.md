@@ -32,17 +32,17 @@ Once the user selects an app idea, **you** (the current agent) perform the boots
 
 1. Create a new private GitHub repo:
    ```bash
-   gh repo create loganrenz/<app-name> --private --confirm
+   gh repo create narduk-enterprises/<app-name> --private --confirm
    ```
 2. Clone the template:
    ```bash
-   gh repo clone loganrenz/narduk-nuxt-template ~/new-code/<app-name>
+   gh repo clone narduk-enterprises/narduk-nuxt-template ~/new-code/<app-name>
    ```
 3. Set the new repo as origin:
    ```bash
    cd ~/new-code/<app-name>
    git remote remove origin
-   git remote add origin https://github.com/loganrenz/<app-name>.git
+   git remote add origin https://github.com/narduk-enterprises/<app-name>.git
    ```
 4. Install dependencies:
    ```bash

@@ -245,7 +245,7 @@ git add . && git commit -m "feat: migrate <source> to monorepo architecture"
 | `D1_ERROR: no such table`                       | `pnpm --filter web run db:migrate && pnpm --filter web run db:seed` |
 | `Duplicated auto-import: X`                     | Delete app-level file (layer takes priority)                        |
 | `PostCSS: @import must precede all other rules` | Move `@import` to top of CSS, or use `app.head.link`                |
-| `Cannot find module '@loganrenz/...'`           | `pnpm install` from repo root                                       |
+| `Cannot find module '@narduk-enterprises/...'`           | `pnpm install` from repo root                                       |
 | `No D1 database binding`                        | Add `d1_databases` to `wrangler.json`                               |
 
 ---
@@ -269,7 +269,7 @@ Run `/check-layer-health`, `/check-architecture`, `/check-ui-styling`, `/check-s
 
    ```bash
    cd ~/new-code/<project-name>
-   git remote add origin https://github.com/loganrenz/<project-name>.git
+   git remote add origin https://github.com/narduk-enterprises/<project-name>.git
    git branch -M main
    git push -u origin main --force
    ```

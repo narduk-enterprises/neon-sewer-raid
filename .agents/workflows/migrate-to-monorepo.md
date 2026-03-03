@@ -23,7 +23,7 @@ description: Migrate a flat Nuxt 4 app from ~/code into the neon-sewer-raid mono
 1. Navigate to the source repository and clone the template into a sub-directory:
    ```bash
    cd ~/code/<source>
-   git clone https://github.com/loganrenz/neon-sewer-raid.git ./<project-name>-v2
+   git clone https://github.com/narduk-enterprises/neon-sewer-raid.git ./<project-name>-v2
    cd ./<project-name>-v2
    rm -rf .git
    git init && git add . && git commit -m "chore: scaffold from neon-sewer-raid"

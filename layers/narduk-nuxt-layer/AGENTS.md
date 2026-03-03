@@ -2,8 +2,8 @@
 
 > **🚨 CRITICAL: THIS IS A NUXT LAYER 🚨**
 >
-> You are working inside **`loganrenz/narduk-nuxt-layer`**. This is NOT an application that gets deployed to production directly.
-> This is a shared library/layer that downstream applications extend using `extends: ['@loganrenz/narduk-nuxt-template-layer']` in their `nuxt.config.ts`.
+> You are working inside **`narduk-enterprises/narduk-nuxt-layer`**. This is NOT an application that gets deployed to production directly.
+> This is a shared library/layer that downstream applications extend using `extends: ['@narduk-enterprises/narduk-nuxt-template-layer']` in their `nuxt.config.ts`.
 >
 > **When to edit files here:**
 >

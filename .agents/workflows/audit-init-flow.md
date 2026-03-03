@@ -53,7 +53,7 @@ The `.md` replacement step in `init.ts` processes markdown files separately. Ver
 For each match:
 
 - **SHOULD be replaced** → CONTRIBUTING.md, example READMEs (Doppler project names, clone URLs)
-- **MUST NOT be replaced** → AGENTS.md files (clone/push safety warnings), root README.md (overwritten by init), layer READMEs (reference `@loganrenz/narduk-nuxt-template-layer` published identity), `.agents/workflows/` files (instructional references)
+- **MUST NOT be replaced** → AGENTS.md files (clone/push safety warnings), root README.md (overwritten by init), layer READMEs (reference `@narduk-enterprises/narduk-nuxt-template-layer` published identity), `.agents/workflows/` files (instructional references)
 
 Verify the `mdFiles` filter in `init.ts` correctly includes/excludes each category:
 

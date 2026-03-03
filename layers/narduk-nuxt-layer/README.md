@@ -1,6 +1,6 @@
 # Narduk Nuxt Layer
 
-> **⚠️ ARCHITECTURE NOTICE:** This is a **Nuxt Layer**. You do not build applications directly inside this directory. Instead, downstream applications (like `apps/web/` or `apps/example-*/`) use `extends: ['@loganrenz/narduk-nuxt-template-layer']` to inherit these shared resources.
+> **⚠️ ARCHITECTURE NOTICE:** This is a **Nuxt Layer**. You do not build applications directly inside this directory. Instead, downstream applications (like `apps/web/` or `apps/example-*/`) use `extends: ['@narduk-enterprises/narduk-nuxt-template-layer']` to inherit these shared resources.
 
 This is the centralized source of truth for **Nuxt 4**, the aesthetics of **Nuxt UI 4 (Tailwind CSS 4)**, and our global integrations for **Cloudflare Workers** and **D1 SQLite databases**.
 

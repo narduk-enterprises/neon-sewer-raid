@@ -52,7 +52,7 @@ Audit the shared Nuxt Layer for publication readiness and clean inheritance.
    - Run `grep -r 'as DrizzleD1Database' layers/ --include='*.ts' | head -10`
 
 4. **Consumer ergonomics**
-   - App's `nuxt.config.ts` should only need `extends: ['@loganrenz/narduk-nuxt-template-layer']`
+   - App's `nuxt.config.ts` should only need `extends: ['@narduk-enterprises/narduk-nuxt-template-layer']`
    - No duplicated module declarations between app and layer
 
 **Scoring:** 10 = all checks pass. -1 for each: missing exports, missing type augmentation, duplicated modules, no layer AGENTS.md.
