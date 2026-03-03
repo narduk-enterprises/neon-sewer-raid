@@ -1,5 +1,5 @@
 {
-  "name": "neon-sewer-raid-monorepo",
+  "name": "neon-sewer-raid",
   "private": true,
   "scripts": {
     "dev": "pnpm -r --filter web dev",
