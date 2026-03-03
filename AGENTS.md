@@ -7,7 +7,7 @@
 > ```bash
 > git clone https://github.com/loganrenz/neon-sewer-raid-monorepo.git <project-name>
 > cd <project-name>
-> pnpm install
+> pnpm install 
 > ```
 >
 > **Verify your remote** with `git remote -v` — it must NOT point to `loganrenz/neon-sewer-raid`.
