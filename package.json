@@ -10,9 +10,9 @@
     "quality": "pnpm -r quality",
     "init": "jiti tools/init.ts",
     "validate": "jiti tools/validate.ts",
-    "predev": "node tools/check-setup.js",
-    "prebuild": "node tools/check-setup.js",
-    "predeploy": "node tools/check-setup.js",
+    "predev": "node tools/check-setup.cjs",
+    "prebuild": "node tools/check-setup.cjs",
+    "predeploy": "node tools/check-setup.cjs",
     "update-layer": "npx tsx tools/update-layer.ts",
     "generate:favicons": "npx tsx tools/generate-favicons.ts"
   },
