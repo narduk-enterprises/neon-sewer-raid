@@ -1,3 +1,4 @@
+/// <reference types="@cloudflare/workers-types" />
 /**
  * KV Namespace Utilities — Cloudflare Workers KV helpers.
  *
@@ -31,6 +32,8 @@
  * ```
  */
 
+import type { H3Event } from 'h3'
+
 /// <reference types="@cloudflare/workers-types" />
 
 /**
@@ -38,7 +41,7 @@
  * @param event - The H3 event
  * @param bindingName - KV binding name from wrangler.json (default: 'KV')
  */
-export function useKV(event: any, bindingName = 'KV'): KVNamespace {
+export function useKV(event: H3Event, bindingName = 'KV'): KVNamespace {
   const env = event.context.cloudflare?.env
   if (!env?.[bindingName]) {
     throw createError({
@@ -52,7 +55,7 @@ export function useKV(event: any, bindingName = 'KV'): KVNamespace {
 /**
  * Get a JSON-parsed value from KV.
  */
-export async function kvGet<T = unknown>(event: any, key: string, bindingName = 'KV'): Promise<T | null> {
+export async function kvGet<T = unknown>(event: H3Event, key: string, bindingName = 'KV'): Promise<T | null> {
   const kv = useKV(event, bindingName)
   const raw = await kv.get(key)
   if (!raw) return null
@@ -67,7 +70,7 @@ export async function kvGet<T = unknown>(event: any, key: string, bindingName = 
  * Set a JSON value in KV with optional TTL.
  */
 export async function kvSet(
-  event: any,
+  event: H3Event,
   key: string,
   value: unknown,
   ttl?: number,
@@ -81,7 +84,7 @@ export async function kvSet(
 /**
  * Delete a key from KV.
  */
-export async function kvDelete(event: any, key: string, bindingName = 'KV'): Promise<void> {
+export async function kvDelete(event: H3Event, key: string, bindingName = 'KV'): Promise<void> {
   const kv = useKV(event, bindingName)
   await kv.delete(key)
 }

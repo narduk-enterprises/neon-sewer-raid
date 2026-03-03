@@ -4,9 +4,13 @@
  * Loads the GA4 measurement script and tracks SPA page navigations.
  * Set GA_MEASUREMENT_ID in your .env to activate.
  */
+
+/** A single gtag() command: the command name followed by its arguments. */
+type GtagCommand = [string, ...unknown[]]
+
 export default defineNuxtPlugin(() => {
   const runtimeConfig = useRuntimeConfig()
-  const measurementId = runtimeConfig.public.gaMeasurementId as string
+  const measurementId = runtimeConfig.public.gaMeasurementId
 
   if (!measurementId || import.meta.server) return
 
@@ -20,8 +24,8 @@ export default defineNuxtPlugin(() => {
 
   // Initialize dataLayer
   window.dataLayer = window.dataLayer || []
-  function gtag(...args: any[]) {
-    window.dataLayer.push(args)
+  function gtag(command: string, ...args: unknown[]) {
+    window.dataLayer.push([command, ...args])
   }
   gtag('js', new Date())
   gtag('config', measurementId, {
@@ -50,6 +54,6 @@ export default defineNuxtPlugin(() => {
 // Extend window type for dataLayer
 declare global {
   interface Window {
-    dataLayer: any[]
+    dataLayer: GtagCommand[]
   }
 }

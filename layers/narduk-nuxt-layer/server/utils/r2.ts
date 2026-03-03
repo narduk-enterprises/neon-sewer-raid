@@ -1,3 +1,4 @@
+/// <reference types="@cloudflare/workers-types" />
 /**
  * R2 Bucket Utilities — Cloudflare R2 Object Storage helpers.
  *
@@ -31,6 +32,8 @@
  * ```
  */
 
+import type { H3Event } from 'h3'
+
 /// <reference types="@cloudflare/workers-types" />
 
 /**
@@ -38,7 +41,7 @@
  * @param event - The H3 event
  * @param bindingName - R2 binding name from wrangler.json (default: 'BUCKET')
  */
-export function useR2(event: any, bindingName = 'BUCKET'): R2Bucket {
+export function useR2(event: H3Event, bindingName = 'BUCKET'): R2Bucket {
   const env = event.context.cloudflare?.env
   if (!env?.[bindingName]) {
     throw createError({
@@ -53,7 +56,7 @@ export function useR2(event: any, bindingName = 'BUCKET'): R2Bucket {
  * Upload a file to R2 and return its key.
  */
 export async function uploadToR2(
-  event: any,
+  event: H3Event,
   key: string,
   data: ArrayBuffer | ReadableStream | string,
   contentType?: string,
@@ -68,7 +71,7 @@ export async function uploadToR2(
  * Delete an object from R2.
  */
 export async function deleteFromR2(
-  event: any,
+  event: H3Event,
   key: string | string[],
   bindingName = 'BUCKET',
 ): Promise<void> {

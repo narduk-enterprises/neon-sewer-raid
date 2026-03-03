@@ -32,8 +32,9 @@ function refreshPage() {
   }
 }
 
-useSeoMeta({
+useSeo({
   title: `${props.error?.statusCode || 'Error'} — ${title.value}`,
+  description: description.value,
   robots: 'noindex, nofollow',
 })
 </script>

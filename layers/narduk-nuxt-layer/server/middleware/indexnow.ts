@@ -9,7 +9,7 @@
  */
 export default defineEventHandler((event) => {
   const config = useRuntimeConfig(event)
-  const key = (config.public.indexNowKey as string) || ''
+  const key = config.public.indexNowKey || ''
 
   if (!key) return // Continue pipeline if no key config
 

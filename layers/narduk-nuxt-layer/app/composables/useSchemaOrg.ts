@@ -66,21 +66,21 @@ export function useArticleSchema(options: ArticleOptions) {
 
   const authors = Array.isArray(author) ? author : [author]
 
-  useSchemaOrg([
-    defineArticle({
-      headline,
-      description,
-      datePublished,
-      dateModified: dateModified || datePublished,
-      author: authors.map(a => ({
-        name: a.name,
-        url: a.url,
-      })),
-      image: image as any,
-      articleSection: section,
-      keywords: tags,
-    } as any),
-  ])
+  const imageVal = Array.isArray(image) ? image[0] : image
+  const articleInput = {
+    headline,
+    description,
+    datePublished,
+    dateModified: dateModified || datePublished,
+    author: authors.map(a => ({
+      name: a.name,
+      url: a.url,
+    })),
+    ...(imageVal !== undefined && imageVal !== '' && { image: imageVal }),
+    ...(section !== undefined && section !== '' && { articleSection: section }),
+    ...(tags !== undefined && tags.length > 0 && { keywords: tags }),
+  }
+  useSchemaOrg([defineArticle(articleInput as Parameters<typeof defineArticle>[0])])
 }
 
 // --- Product schema ---
@@ -100,33 +100,30 @@ interface ProductOptions {
 export function useProductSchema(options: ProductOptions) {
   const { name, description, image, brand, sku, price, priceCurrency = 'USD', availability, ratingValue, reviewCount } = options
 
-  const product: Record<string, any> = {
-    name,
-    description,
-    image,
-  }
-
-  if (brand) product.brand = { '@type': 'Brand', name: brand }
-  if (sku) product.sku = sku
-
-  if (price !== undefined) {
-    product.offers = {
-      '@type': 'Offer',
-      price: price.toString(),
-      priceCurrency,
-      availability: availability ? `https://schema.org/${availability}` : undefined,
-    }
-  }
-
-  if (ratingValue !== undefined && reviewCount !== undefined) {
-    product.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue,
-      reviewCount,
-    }
-  }
-
-  useSchemaOrg([defineProduct(product)])
+  useSchemaOrg([
+    defineProduct({
+      name,
+      description,
+      image,
+      ...(brand && { brand: { '@type': 'Brand' as const, name: brand } }),
+      ...(sku && { sku }),
+      ...(price !== undefined && {
+        offers: {
+          '@type': 'Offer' as const,
+          price: price.toString(),
+          priceCurrency,
+          ...(availability && { availability: `https://schema.org/${availability}` }),
+        },
+      }),
+      ...(ratingValue !== undefined && reviewCount !== undefined && {
+        aggregateRating: {
+          '@type': 'AggregateRating' as const,
+          ratingValue,
+          reviewCount,
+        },
+      }),
+    }),
+  ])
 }
 
 // --- FAQ schema ---
@@ -140,10 +137,10 @@ export function useFAQSchema(items: FAQItem[]) {
     {
       '@type': 'FAQPage',
       mainEntity: items.map(item => ({
-        '@type': 'Question',
+        '@type': 'Question' as const,
         name: item.question,
         acceptedAnswer: {
-          '@type': 'Answer',
+          '@type': 'Answer' as const,
           text: item.answer,
         },
       })),
@@ -177,35 +174,31 @@ interface LocalBusinessOptions {
 export function useLocalBusinessSchema(options: LocalBusinessOptions) {
   const { name, description, image, telephone, email, address, geo, openingHours, priceRange, url } = options
 
-  const business: Record<string, any> = {
-    '@type': 'LocalBusiness',
-    name,
-    description,
-    image,
-    telephone,
-    email,
-    url,
-    priceRange,
-    address: {
-      '@type': 'PostalAddress',
-      ...address,
-      addressCountry: address.addressCountry || 'US',
+  useSchemaOrg([
+    {
+      '@type': 'LocalBusiness' as const,
+      name,
+      description,
+      image,
+      telephone,
+      email,
+      url,
+      priceRange,
+      address: {
+        '@type': 'PostalAddress' as const,
+        ...address,
+        addressCountry: address.addressCountry || 'US',
+      },
+      ...(geo && {
+        geo: {
+          '@type': 'GeoCoordinates' as const,
+          latitude: geo.latitude,
+          longitude: geo.longitude,
+        },
+      }),
+      ...(openingHours?.length && { openingHoursSpecification: openingHours }),
     },
-  }
-
-  if (geo) {
-    business.geo = {
-      '@type': 'GeoCoordinates',
-      latitude: geo.latitude,
-      longitude: geo.longitude,
-    }
-  }
-
-  if (openingHours?.length) {
-    business.openingHoursSpecification = openingHours
-  }
-
-  useSchemaOrg([business])
+  ])
 }
 
 // --- BreadcrumbList schema ---
@@ -218,7 +211,7 @@ export function useBreadcrumbSchema(items: BreadcrumbItem[]) {
   useSchemaOrg([
     defineBreadcrumb({
       itemListElement: items.map((item, index) => ({
-        '@type': 'ListItem',
+        '@type': 'ListItem' as const,
         position: index + 1,
         name: item.name,
         item: item.url,

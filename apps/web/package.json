@@ -7,7 +7,7 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "db:migrate": "wrangler d1 execute neon-sewer-raid-db --local --file=drizzle/0000_initial_schema.sql",
-    "db:seed": "wrangler d1 execute neon-sewer-raid-db --local --file=../../layers/narduk-nuxt-layer/drizzle/seed.sql",
+    "db:seed": "wrangler d1 execute neon-sewer-raid-db --local --file=node_modules/@loganrenz/narduk-nuxt-template-layer/drizzle/seed.sql",
     "db:studio": "drizzle-kit studio",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -18,6 +18,7 @@
     "quality": "pnpm run lint && pnpm run typecheck"
   },
   "dependencies": {
+    "@loganrenz/narduk-nuxt-template-layer": "workspace:*",
     "@narduk/eslint-config": "workspace:*",
     "nuxt": "^4.3.1",
     "zod": "^4.3.6"

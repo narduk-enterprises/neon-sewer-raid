@@ -1,13 +1,8 @@
-<!-- 
-  OG Image Default Template
-  
-  Rendered at the edge via Satori (part of nuxt-og-image / @nuxtjs/seo).
-  This is the default template used when calling `defineOgImage()` or
-  the `useSeo({ ogImage: {...} })` composable.
-  
-  Satori renders this Vue component to an SVG, then converts to PNG.
-  Note: Satori has limited CSS support — use inline styles and flexbox only.
-  No Tailwind classes, no CSS Grid, no pseudo-elements.
+<!--
+  OG Image Default Template.
+
+  Nuxt OG Image v6 resolves renderers by filename suffix, so this template
+  is explicitly Takumi via `.takumi.vue`.
 -->
 <script setup lang="ts">
 withDefaults(defineProps<{
@@ -15,11 +10,14 @@ withDefaults(defineProps<{
   description?: string
   icon?: string
   siteName?: string
+  /** Brand color hex — defaults to emerald. Override to match your app's primary color. */
+  primaryColor?: string
 }>(), {
   title: 'Nuxt 4 Template',
   description: 'Production-ready Nuxt 4 + Cloudflare Workers',
   icon: '✨',
-  siteName: 'Neon Sewer Raid',
+  siteName: 'Nuxt 4 Demo',
+  primaryColor: '#10b981', // eslint-disable-line atx/no-inline-hex
 })
 </script>
 
@@ -33,13 +31,12 @@ withDefaults(defineProps<{
       justifyContent: 'center',
       alignItems: 'flex-start',
       padding: '80px',
-      background: 'linear-gradient(135deg, #0a0f1a 0%, #0f1729 40%, #111d33 100%)',
+      background: `linear-gradient(135deg, #0a0f1a 0%, #0f1729 40%, #111d33 100%)`,
       fontFamily: 'Inter, sans-serif',
       position: 'relative',
       overflow: 'hidden',
     }"
   >
-    <!-- Accent gradient blob -->
     <div
       :style="{
         position: 'absolute',
@@ -48,11 +45,10 @@ withDefaults(defineProps<{
         width: '500px',
         height: '500px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
+        background: `radial-gradient(circle, ${primaryColor}26 0%, transparent 70%)`,
       }"
     />
 
-    <!-- Bottom accent line -->
     <div
       :style="{
         position: 'absolute',
@@ -60,11 +56,10 @@ withDefaults(defineProps<{
         left: '0',
         right: '0',
         height: '4px',
-        background: 'linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6)',
+        background: `linear-gradient(90deg, ${primaryColor}, #3b82f6, #8b5cf6)`,
       }"
     />
 
-    <!-- Icon -->
     <div
       :style="{
         fontSize: '48px',
@@ -74,7 +69,6 @@ withDefaults(defineProps<{
       {{ icon }}
     </div>
 
-    <!-- Title -->
     <div
       :style="{
         fontSize: '56px',
@@ -90,7 +84,6 @@ withDefaults(defineProps<{
       {{ title }}
     </div>
 
-    <!-- Description -->
     <div
       :style="{
         fontSize: '24px',
@@ -104,7 +97,6 @@ withDefaults(defineProps<{
       {{ description }}
     </div>
 
-    <!-- Site name badge -->
     <div
       :style="{
         position: 'absolute',
@@ -120,8 +112,7 @@ withDefaults(defineProps<{
           width: '32px',
           height: '32px',
           borderRadius: '8px',
-          // eslint-disable-next-line atx/no-inline-hex
-          background: '#10b981',
+          background: primaryColor,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

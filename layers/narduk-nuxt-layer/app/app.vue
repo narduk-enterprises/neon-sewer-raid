@@ -1,11 +1,18 @@
 <script setup lang="ts">
 const route = useRoute()
 const colorMode = useColorMode()
+const appName = useRuntimeConfig().public.appName || ''
 
-const isDark = computed({
-  get: () => colorMode.value === 'dark',
-  set: (val: boolean) => { colorMode.preference = val ? 'dark' : 'light' }
+const colorModeIcon = computed(() => {
+  if (colorMode.preference === 'system') return 'i-lucide-monitor'
+  return colorMode.value === 'dark' ? 'i-lucide-moon' : 'i-lucide-sun'
 })
+
+function cycleColorMode() {
+  const modes = ['system', 'light', 'dark'] as const
+  const idx = modes.indexOf(colorMode.preference as typeof modes[number])
+  colorMode.preference = modes[(idx + 1) % modes.length]!
+}
 
 const navItems = [
   { label: 'Home', to: '/', icon: 'i-lucide-home' },
@@ -26,6 +33,7 @@ watch(route, () => {
 
 <template>
   <UApp>
+    <ULink to="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-100 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg">Skip to content</ULink>
     <div class="app-shell min-h-screen flex flex-col">
       <!-- Header -->
       <div class="sticky top-0 z-50 border-b border-default bg-default/80 backdrop-blur-xl">
@@ -34,7 +42,7 @@ watch(route, () => {
             <div class="size-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">
               N4
             </div>
-            <span class="font-display font-semibold text-lg hidden sm:block">Neon Sewer Raid</span>
+            <span class="font-display font-semibold text-lg hidden sm:block">{{ appName || 'Nuxt 4 Demo' }}</span>
           </NuxtLink>
 
           <!-- Desktop nav -->
@@ -53,15 +61,16 @@ watch(route, () => {
           </div>
 
           <div class="flex items-center gap-2">
-            <USwitch
-              v-model="isDark"
-              checked-icon="i-lucide-moon"
-              unchecked-icon="i-lucide-sun"
-              size="lg"
+            <UButton
+              :icon="colorModeIcon"
+              variant="ghost"
+              color="neutral"
+              aria-label="Toggle color mode"
+              @click="cycleColorMode"
             />
 
             <!-- Mobile hamburger -->
-            <UButton color="neutral" variant="ghost" class="md:hidden p-2 rounded-lg hover:bg-elevated" @click="mobileMenuOpen = !mobileMenuOpen">
+            <UButton color="neutral" variant="ghost" class="md:hidden p-2 rounded-lg hover:bg-elevated" aria-label="Toggle navigation menu" @click="mobileMenuOpen = !mobileMenuOpen">
               <UIcon :name="mobileMenuOpen ? 'i-lucide-x' : 'i-lucide-menu'" class="size-5" />
             </UButton>
           </div>
@@ -87,9 +96,11 @@ watch(route, () => {
       </div>
 
       <!-- Main -->
-      <div class="flex-1">
+      <div id="main-content" class="flex-1">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <NuxtPage />
+          <NuxtLayout>
+            <NuxtPage />
+          </NuxtLayout>
         </div>
       </div>
 
@@ -97,7 +108,7 @@ watch(route, () => {
       <div class="border-t border-default py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p class="text-center text-sm text-muted">
-            Neon Sewer Raid Template &middot; Nuxt UI 4 &middot; Cloudflare Workers &middot; {{ new Date().getFullYear() }}
+            {{ appName || 'Nuxt 4 Demo' }} &middot; Nuxt UI 4 &middot; Cloudflare Workers &middot; <NuxtTime :datetime="new Date()" year="numeric" />
           </p>
         </div>
       </div>

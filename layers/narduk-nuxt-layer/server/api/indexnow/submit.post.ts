@@ -13,9 +13,12 @@
  *     -d '{"urls": ["https://your-site.com/", "https://your-site.com/about"]}'
  */
 export default defineEventHandler(async (event) => {
+  // Rate limit: max 5 submissions per minute per IP
+  await enforceRateLimit(event, 'indexnow', 5, 60_000)
+
   const config = useRuntimeConfig(event)
-  const key = (config.public.indexNowKey as string) || ''
-  const siteUrl = (config.public.appUrl as string) || ''
+  const key = String(config.public.indexNowKey ?? '')
+  const siteUrl = String(config.public.appUrl ?? '')
 
   if (!key) {
     throw createError({ statusCode: 400, message: 'INDEXNOW_KEY not configured' })
@@ -25,7 +28,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<{ urls?: string[] }>(event).catch(() => ({} as { urls?: string[] }))
-  let urls = body?.urls || []
+  let urls = body?.urls ?? []
 
   // Default: submit the homepage + sitemap URL if no URLs provided
   if (!urls.length) {
@@ -66,8 +69,9 @@ export default defineEventHandler(async (event) => {
         status: response.status,
         ok: response.status >= 200 && response.status < 300,
       })
-    } catch (_error: any) {
-      console.warn(`[IndexNow] Failed to ping ${engine}:`, _error.message)
+    } catch (_error: unknown) {
+      const message = _error instanceof Error ? _error.message : String(_error)
+      console.warn(`[IndexNow] Failed to ping ${engine}:`, message)
       results.push({
         engine,
         status: 0,

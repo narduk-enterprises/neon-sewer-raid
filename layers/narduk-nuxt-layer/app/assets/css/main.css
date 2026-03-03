@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+/* Fonts are handled by @nuxt/fonts — no @import url() needed */
 
 @import 'tailwindcss';
 @import '@nuxt/ui';
@@ -7,9 +7,27 @@
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;
+
+  /* Shadows — semantic elevation scale */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-elevated: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+  --shadow-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+
+  /* Border Radius — semantic scale */
+  --radius-card: 1rem;
+  --radius-button: 0.5rem;
+  --radius-badge: 9999px;
+  --radius-input: 0.5rem;
+
+  /* Transitions — consistent motion */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 body {
+  @apply antialiased text-default bg-default scheme-light dark:scheme-dark;
   font-family: var(--font-sans);
 }
 
@@ -20,6 +38,69 @@ h4,
 .font-display {
   font-family: var(--font-display);
 }
+
+/* ─── Elevation Utilities ─── */
+
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-elevated { box-shadow: var(--shadow-elevated); }
+.shadow-overlay { box-shadow: var(--shadow-overlay); }
+
+/* ─── Transition Utilities ─── */
+
+.transition-fast { transition: all var(--transition-fast); }
+.transition-base { transition: all var(--transition-base); }
+.transition-slow { transition: all var(--transition-slow); }
+
+/* ─── Glassmorphism — uses stable Nuxt UI design tokens ─── */
+
+.glass {
+  @apply bg-default/80 border border-default;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-card {
+  @apply bg-default/80 border border-default;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-card);
+}
+
+/* ─── Card Base — reusable card primitive ─── */
+
+.card-base {
+  @apply bg-default border border-default;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base);
+}
+
+.card-base:hover {
+  box-shadow: var(--shadow-elevated);
+}
+
+/* ─── Dark Mode Enhancements ─── */
+
+.dark .shadow-card {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  box-shadow: var(--tw-shadow);
+}
+
+.dark .shadow-elevated {
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  box-shadow: var(--tw-shadow);
+}
+
+.dark .glass {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+  box-shadow: var(--tw-shadow);
+}
+
+.dark .glass-card {
+  box-shadow: var(--shadow-elevated);
+}
+
+/* ─── Animations ─── */
 
 /* Animated gradient background */
 @keyframes gradient-shift {
@@ -55,22 +136,6 @@ h4,
   animation: count-in 0.6s ease-out forwards;
 }
 
-/* Glassmorphism — theme-aware */
-.glass {
-  background: var(--color-surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--color-border);
-}
-
-.glass-card {
-  background: var(--color-surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-}
-
 /* Pulse glow for live indicator */
 @keyframes pulse-glow {
   0%,
@@ -91,7 +156,7 @@ h4,
 /* Page transitions */
 .page-enter-active,
 .page-leave-active {
-  transition: all 0.3s ease;
+  transition: all var(--transition-slow);
 }
 
 .page-enter-from {

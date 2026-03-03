@@ -22,10 +22,10 @@ export default defineEventHandler(async (event) => {
   const gscSiteUrl = `sc-domain:${new URL(siteUrl).hostname}`
   const query = await getValidatedQuery(event, querySchema.parse)
 
-  const endDate = query.endDate ? String(query.endDate) : new Date().toISOString().split('T')[0]
-  const start = new Date(endDate as string)
+  const endDate = query.endDate ? String(query.endDate) : (new Date().toISOString().split('T')[0] ?? '')
+  const start = new Date(endDate)
   start.setDate(start.getDate() - 30)
-  const startDate = query.startDate ? String(query.startDate) : start.toISOString().split('T')[0]
+  const startDate = query.startDate ? String(query.startDate) : (start.toISOString().split('T')[0] ?? '')
 
   try {
     const data = await googleApiFetch(

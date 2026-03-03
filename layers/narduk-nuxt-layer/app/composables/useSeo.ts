@@ -39,7 +39,7 @@ interface SeoOptions {
   /** Static image URL for og:image / twitter:image. Overridden by `ogImage` if set. */
   image?: string
   /** Open Graph type — defaults to 'website'. Use 'article' for blog posts. */
-  type?: 'website' | 'article' | 'product' | 'profile'
+  type?: 'website' | 'article' | 'profile'
   /** ISO 8601 date string — for articles */
   publishedAt?: string
   /** ISO 8601 date string — for articles */
@@ -50,11 +50,15 @@ interface SeoOptions {
   canonicalUrl?: string
   /** Keywords for meta keywords tag */
   keywords?: string[]
-  /** Dynamic OG image options — renders via the OgImageDefault template at the edge */
+  /** Dynamic OG image options — renders via OG image templates at the edge */
   ogImage?: {
     title?: string
     description?: string
     icon?: string
+    /** OG image component name suffix — defaults to 'Default', auto-selects 'Article' for article type */
+    component?: string
+    /** Category badge text — used by the Article template */
+    category?: string
   }
   /** Additional robots directives — e.g., 'noindex', 'nofollow' */
   robots?: string
@@ -75,60 +79,46 @@ export function useSeo(options: SeoOptions) {
     robots,
   } = options
 
-  // --- Core meta tags ---
-  const seoMeta: Record<string, any> = {
+  // --- Core meta tags (no intermediate Record<string, any>) ---
+  useSeoMeta({
     title,
     description,
     ogTitle: title,
     ogDescription: description,
+    // ogType accepts 'website' | 'article' | 'profile' etc.
     ogType: type,
     twitterCard: 'summary_large_image',
     twitterTitle: title,
     twitterDescription: description,
-  }
-
-  // Static image fallback
-  if (image) {
-    seoMeta.ogImage = image
-    seoMeta.twitterImage = image
-  }
-
-  // Article-specific
-  if (type === 'article') {
-    if (publishedAt) seoMeta.articlePublishedTime = publishedAt
-    if (modifiedAt) seoMeta.articleModifiedTime = modifiedAt
-    if (author) seoMeta.articleAuthor = author
-  }
-
-  // Keywords
-  if (keywords?.length) {
-    seoMeta.keywords = keywords.join(', ')
-  }
-
-  // Robots
-  if (robots) {
-    seoMeta.robots = robots
-  }
-
-  useSeoMeta(seoMeta)
+    // Static image fallback
+    ...(image && { ogImage: image, twitterImage: image }),
+    // Article-specific
+    ...(type === 'article' && publishedAt && { articlePublishedTime: publishedAt }),
+    ...(type === 'article' && modifiedAt && { articleModifiedTime: modifiedAt }),
+    ...(type === 'article' && author && { articleAuthor: [author] }),
+    // Keywords
+    ...(keywords?.length && { keywords: keywords.join(', ') }),
+    // Robots
+    ...(robots && { robots }),
+  })
 
   // --- Head extras ---
-  const headConfig: Record<string, any> = {}
-
   if (canonicalUrl) {
-    headConfig.link = [{ rel: 'canonical', href: canonicalUrl }]
-  }
-
-  if (Object.keys(headConfig).length) {
-    useHead(headConfig)
+    useHead({
+      link: [{ rel: 'canonical', href: canonicalUrl }],
+    })
   }
 
   // --- Dynamic OG Image ---
   if (ogImage) {
-    defineOgImageComponent('OgImageDefault', {
+    const componentName = ogImage.component || (type === 'article' ? 'Article' : 'Default')
+    // @ts-expect-error OgImage components are provided by this layer but OgImageComponents
+    // types aren't populated until the consuming app runs nuxt prepare.
+    defineOgImage(componentName, {
       title: ogImage.title || title,
       description: ogImage.description || description,
-      icon: ogImage.icon || 'i-lucide-sparkles',
+      icon: ogImage.icon || '✨',
+      ...(ogImage.category && { category: ogImage.category }),
     })
   }
 }

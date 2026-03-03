@@ -7,6 +7,10 @@ import type { H3Event } from 'h3'
  * this provides per-isolate protection against brute-force/credential-stuffing.
  * For stricter global limits, use Cloudflare Rate Limiting rules.
  *
+ * NOTE: The module-scope `buckets` Map is INTENTIONAL. It provides within-isolate
+ * rate limiting across requests handled by the same Worker instance. This state
+ * is NOT shared across isolates and is lost when the isolate is evicted.
+ *
  * Usage:
  *   await enforceRateLimit(event, 'auth', 10, 60_000)
  */
@@ -16,6 +20,7 @@ interface RateLimitEntry {
 }
 
 const buckets = new Map<string, Map<string, RateLimitEntry>>()
+let cleanupCounter = 0
 
 function getClientIp(event: H3Event): string {
   return (
@@ -71,8 +76,9 @@ export async function enforceRateLimit(
 
   entry.timestamps.push(now)
 
-  // Periodic cleanup: remove entries with no recent activity (every 100th request)
-  if (Math.random() < 0.01) {
+  // Deterministic cleanup: remove stale entries every 100 requests
+  cleanupCounter++
+  if (cleanupCounter % 100 === 0) {
     for (const [k, v] of bucket) {
       if (v.timestamps.every((t) => t <= cutoff)) {
         bucket.delete(k)
