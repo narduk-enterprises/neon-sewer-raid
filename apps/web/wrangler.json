@@ -16,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "neon-sewer-raid-db",
-      "database_id": "83b9f319-c34e-4625-9c08-1eb384d9d36d",
+      "database_id": "83b9f319-c34e-4625-9c08-1eb384d9d36d"
     }
   ],
   "routes": [
