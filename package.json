@@ -21,7 +21,12 @@
       "sharp",
       "vue-demi",
       "workerd"
-    ]
+    ],
+    "overrides": {
+      "nuxt-og-image": "6.0.0-beta.42",
+      "esbuild": ">=0.25.0",
+      "serialize-javascript": ">=7.0.3"
+    }
   },
   "packageManager": "pnpm@10.28.0",
   "volta": {
