@@ -81,7 +81,7 @@ export function useAudio() {
   function initCtx() {
     if (ctx) return
     if (import.meta.client) {
-      ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      ctx = new (window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext!)()
     }
     // Preload SFX
     const sfxFiles = ['cowabunga', 'pizza', 'radical', 'attack']
