@@ -14,7 +14,9 @@
     "prebuild": "node tools/check-setup.cjs",
     "predeploy": "node tools/check-setup.cjs",
     "update-layer": "npx tsx tools/update-layer.ts",
-    "generate:favicons": "npx tsx tools/generate-favicons.ts"
+    "generate:favicons": "npx tsx tools/generate-favicons.ts",
+    "postinstall": "node -e \"if(!require('fs').existsSync('.setup-complete'))console.log('\\n⚠️  Run pnpm run setup before doing anything else! See AGENTS.md.\\n')\"",
+    "prelint": "pnpm run build:plugins"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
