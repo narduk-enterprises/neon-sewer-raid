@@ -17,6 +17,7 @@ jobs:
 
   deploy:
     if: github.event_name != 'pull_request'
+    needs: [quality]
     permissions:
       contents: read
       deployments: write
