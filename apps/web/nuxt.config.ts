@@ -1,3 +1,4 @@
+// deploy-trigger: 2026-03-04T20:40:25Z
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   extends: ['@narduk-enterprises/narduk-nuxt-template-layer'],
