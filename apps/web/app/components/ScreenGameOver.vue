@@ -2,7 +2,7 @@
 const game = inject('game') as ReturnType<typeof useGameEngine>
 
 function shareScore() {
-  const text = `🐢 NEON SEWER RAID\nSCORE: ${game.score.value}\nLEVEL: ${game.level.value}\nWAVE: ${game.wave.value}\nDetails: https://neon-sewer-raid.narduk.workers.dev/`
+  const text = `🐢 NEON SEWER RAID\nSCORE: ${game.score.value}\nLEVEL: ${game.level.value}\nWAVE: ${game.wave.value}\nDetails: https://neon-sewer-raid.nard.uk/`
   navigator.clipboard.writeText(text)
     .then(() => alert('Score copied! 📋'))
     .catch(() => alert('Could not copy score.'))
