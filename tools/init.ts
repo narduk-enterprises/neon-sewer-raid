@@ -205,6 +205,34 @@ async function main() {
   // 1. Recursive String Replacement
   if (REPAIR_MODE) {
     console.log('\nStep 1/10: Replacing boilerplate strings... ⏭ skipped (--repair)')
+
+    // Even in repair mode, ensure wrangler.json name and database_name are correct.
+    // These are critical for deployment — if they still say "narduk-nuxt-template",
+    // the worker deploys to the wrong name.
+    const appsForWrangler = await fs.readdir(path.join(ROOT_DIR, 'apps'), { withFileTypes: true }).catch(() => [])
+    for (const entry of appsForWrangler) {
+      if (!entry.isDirectory() || entry.name.startsWith('example-') || entry.name === 'showcase') continue
+      const wranglerPath = path.join(ROOT_DIR, 'apps', entry.name, 'wrangler.json')
+      try {
+        const content = await fs.readFile(wranglerPath, 'utf-8')
+        const parsed = JSON.parse(content)
+        let changed = false
+        // Replace worker name: template name → app name (with suffix for non-web apps)
+        if (parsed.name && parsed.name.includes('narduk-nuxt-template')) {
+          parsed.name = entry.name === 'web' ? APP_NAME : `${APP_NAME}-${entry.name}`
+          changed = true
+        }
+        // Replace database name
+        if (parsed.d1_databases?.[0]?.database_name?.includes('narduk-nuxt-template')) {
+          parsed.d1_databases[0].database_name = parsed.d1_databases[0].database_name.replace('narduk-nuxt-template', APP_NAME)
+          changed = true
+        }
+        if (changed) {
+          await fs.writeFile(wranglerPath, JSON.stringify(parsed, null, 2) + '\n', 'utf-8')
+          console.log(`  ✅ Fixed wrangler.json for apps/${entry.name} (name → ${parsed.name})`)
+        }
+      } catch { /* no wrangler.json */ }
+    }
   } else {
     console.log('\nStep 1/10: Replacing boilerplate strings...')
     const files = await walkDir(ROOT_DIR)
@@ -452,6 +480,9 @@ Pushes to \`main\` are automatically built and deployed via the GitHub Actions C
         POSTHOG_HOST: '${narduk-nuxt-template.prd.POSTHOG_HOST}',
         GA_ACCOUNT_ID: '${narduk-nuxt-template.prd.GA_ACCOUNT_ID}',
         GSC_SERVICE_ACCOUNT_JSON: '${narduk-nuxt-template.prd.GSC_SERVICE_ACCOUNT_JSON}',
+        APPLE_KEY_ID: '${narduk-nuxt-template.prd.APPLE_KEY_ID}',
+        APPLE_SECRET_KEY: '${narduk-nuxt-template.prd.APPLE_SECRET_KEY}',
+        APPLE_TEAM_ID: '${narduk-nuxt-template.prd.APPLE_TEAM_ID}',
       }
 
       // Per-app secrets (only set if missing — don't overwrite app-specific values)
@@ -587,17 +618,28 @@ Pushes to \`main\` are automatically built and deployed via the GitHub Actions C
 
   // 6.5. Local Doppler Setup (skip if in CI)
   console.log('\nStep 6.5/10: Configuring local Doppler environment...')
+  
+  // Always explicitly write the doppler.yaml file so it is tracked in git
+  // for any future developers pulling the repository
+  const dopplerYamlPath = path.join(ROOT_DIR, 'doppler.yaml')
+  try {
+    await fs.writeFile(dopplerYamlPath, \`setup:\\n  project: \${APP_NAME}\\n  config: dev\\n\`, 'utf-8')
+    console.log(\`  ✅ Created doppler.yaml (project=\${APP_NAME}, config=dev)\`)
+  } catch (error: any) {
+    console.warn(\`  ⚠️ Failed to explicitly write doppler.yaml: \${error.message}\`)
+  }
+
   if (!DOPPLER_AVAILABLE) {
-    console.log('  ⏭ Doppler CLI not configured; skipping local setup.')
+    console.log('  ⏭ Doppler CLI not configured; skipping local setup command.')
   } else if (process.env.CI) {
-    console.log('  ⏭ Running in CI; skipping local Doppler setup.')
+    console.log('  ⏭ Running in CI; skipping local Doppler setup command.')
   } else {
     try {
-      execSync(`doppler setup --project ${APP_NAME} --config dev`, { encoding: 'utf-8', stdio: 'pipe' })
-      console.log(`  ✅ Local Doppler environment configured for project: ${APP_NAME} (dev config)`)
+      execSync(\`doppler setup --project \${APP_NAME} --config dev\`, { encoding: 'utf-8', stdio: 'pipe' })
+      console.log(\`  ✅ Local Doppler environment configured for project: \${APP_NAME} (dev config)\`)
     } catch (error: any) {
       const stderr = error.stderr || error.message || ''
-      console.warn(`  ⚠️ Failed to configure local Doppler environment: ${stderr}`)
+      console.warn(\`  ⚠️ Failed to configure local Doppler environment: \${stderr}\`)
     }
   }
 
@@ -669,33 +711,62 @@ Pushes to \`main\` are automatically built and deployed via the GitHub Actions C
     console.warn('    Run manually: pnpm generate:favicons -- --target=apps/web/public')
   }
 
-  // 9. Template Cleanup (removing template-specific robust boilerplate)
-  if (REPAIR_MODE) {
-    console.log('\nStep 9/10: Cleaning up template examples... ⏭ skipped (--repair)')
-  } else {
-    console.log('\nStep 9/10: Cleaning up template examples and configs...')
-    try {
-      const rmOptions = { recursive: true, force: true }
-      // Remove example directories
-      const dirsToRemove = [
-        path.join(ROOT_DIR, 'apps', 'showcase'),
-      ]
+  // 9. Template Cleanup
+  // Split into 9a (always run — idempotent cleanup) and 9b (first-run only — config rewrites)
+  console.log('\nStep 9/10: Cleaning up template examples and configs...')
 
-      const appsContent = await fs.readdir(path.join(ROOT_DIR, 'apps'), { withFileTypes: true }).catch(() => [])
-      for (const entry of appsContent) {
-        if (entry.isDirectory() && entry.name.startsWith('example-')) {
-          dirsToRemove.push(path.join(ROOT_DIR, 'apps', entry.name))
-        }
+  // 9a: Always run — delete example apps and template-only workflows (idempotent via force: true)
+  try {
+    const rmOptions = { recursive: true, force: true }
+    const dirsToRemove = [
+      path.join(ROOT_DIR, 'apps', 'showcase'),
+    ]
+
+    const appsContent = await fs.readdir(path.join(ROOT_DIR, 'apps'), { withFileTypes: true }).catch(() => [])
+    for (const entry of appsContent) {
+      if (entry.isDirectory() && entry.name.startsWith('example-')) {
+        dirsToRemove.push(path.join(ROOT_DIR, 'apps', entry.name))
       }
+    }
 
-      for (const dir of dirsToRemove) {
+    let removedCount = 0
+    for (const dir of dirsToRemove) {
+      try {
+        await fs.stat(dir)
         await fs.rm(dir, rmOptions)
+        removedCount++
+      } catch {
+        // Directory doesn't exist — already cleaned
       }
+    }
 
-      // Remove specific GitHub workflows
-      await fs.rm(path.join(ROOT_DIR, '.github', 'workflows', 'deploy-showcase.yml'), rmOptions)
-      await fs.rm(path.join(ROOT_DIR, '.github', 'workflows', 'publish-layer.yml'), rmOptions)
+    // Remove template-only GitHub workflows (idempotent via force: true)
+    const templateOnlyWorkflows = [
+      'deploy-showcase.yml',
+      'publish-layer.yml',
+      'sync-fleet.yml',
+      'template-sync-bot.yml',
+      'version-bump.yml',
+      'weekly-drift-check.yml',
+    ]
+    for (const wf of templateOnlyWorkflows) {
+      await fs.rm(path.join(ROOT_DIR, '.github', 'workflows', wf), rmOptions)
+    }
 
+    if (removedCount > 0) {
+      console.log(`  ✅ Removed ${removedCount} example/showcase directories.`)
+    } else {
+      console.log('  ⏭ No example apps to clean (already removed).')
+    }
+  } catch (error: any) {
+    console.warn(`  ⚠️ Example cleanup failed: ${error.message}`)
+  }
+
+  // 9b: First-run only — strip plugin test scripts, rewrite CI/playwright configs, prune root scripts
+  if (REPAIR_MODE) {
+    console.log('  ⏭ Config rewrites skipped (--repair)')
+  } else {
+    try {
       // Prune root package.json scripts
       const rootPkgPath = path.join(ROOT_DIR, 'package.json')
       const rootPkgContent = await fs.readFile(rootPkgPath, 'utf-8')
@@ -818,6 +889,17 @@ export default defineConfig({
     } catch (error: any) {
       console.warn(`  ⚠️ Template cleanup failed: ${error.message}`)
     }
+  }
+
+  // Build ESLint plugins to ensure dist/ exists (required for linting)
+  // .gitignore excludes dist/, so this must run after every fresh clone/init.
+  console.log('\n  Building ESLint plugins...')
+  try {
+    execSync('pnpm run build:plugins', { stdio: 'inherit', cwd: ROOT_DIR })
+    console.log('  ✅ ESLint plugins built successfully.')
+  } catch (error: any) {
+    console.warn(`  ⚠️ ESLint plugin build failed: ${error.message}`)
+    console.warn('    Run manually: pnpm run build:plugins')
   }
 
   // 10. Done (script is kept for re-runs)
