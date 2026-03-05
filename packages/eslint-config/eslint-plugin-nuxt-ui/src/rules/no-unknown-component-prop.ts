@@ -172,7 +172,7 @@ export interface RuleContext {
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow unknown props on Nuxt UI components',
       category: 'Possible Errors',

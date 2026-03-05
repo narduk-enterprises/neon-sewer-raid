@@ -21,7 +21,7 @@ const DEFAULT_WHITELIST = [
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'disallow complex expressions in templates',
       category: 'Best Practices',
@@ -40,6 +40,10 @@ export default {
             type: 'number',
             default: 3,
           },
+          maxCallArgs: {
+            type: 'number',
+            default: 1,
+          },
           allowedFunctions: {
             type: 'array',
             items: { type: 'string' },
@@ -57,6 +61,7 @@ export default {
     const options = context.options[0] || {}
     const maxTernaryDepth = options.maxTernaryDepth ?? 1
     const maxLogicalOps = options.maxLogicalOps ?? 3
+    const maxCallArgs = options.maxCallArgs ?? 1
     const allowedFunctions = options.allowedFunctions || DEFAULT_WHITELIST
     
     if (!parserServices || !parserServices.defineTemplateBodyVisitor) {
@@ -83,6 +88,28 @@ export default {
       }
       return count
     }
+
+    /**
+     * Check whether a call argument is "complex" — i.e. contains a
+     * ternary, logical chain, or nested function call with arguments.
+     */
+    const isComplexArg = (n: any): boolean => {
+      if (!n || typeof n !== 'object') return false
+      if (n.type === 'ConditionalExpression') return true
+      if (n.type === 'LogicalExpression') return true
+      if (n.type === 'CallExpression' && n.arguments.length > 0) return true
+      // Recurse into sub-expressions (e.g. template literals, binary ops)
+      for (const key in n) {
+        if (key === 'parent' || key === 'loc' || key === 'range') continue
+        const child = n[key]
+        if (Array.isArray(child)) {
+          if (child.some(isComplexArg)) return true
+        } else if (child && typeof child === 'object' && child.type) {
+          if (isComplexArg(child)) return true
+        }
+      }
+      return false
+    }
     
     const checkExpression = (node: any) => {
       // Check ternary depth
@@ -107,22 +134,41 @@ export default {
         return
       }
       
-      // Recursively check for function calls with arguments (unless whitelisted)
+      // Recursively check for disallowed function calls
       const checkForDisallowedFunctionCalls = (n: any): void => {
         if (!n || typeof n !== 'object') return
         
         if (n.type === 'CallExpression' && n.arguments.length > 0) {
           const callee = n.callee
-          if (
-            callee.type === 'Identifier' &&
-            !allowedFunctions.includes(callee.name)
-          ) {
+          const calleeName = callee.type === 'Identifier' ? callee.name : null
+
+          // Skip whitelisted function names
+          if (calleeName && allowedFunctions.includes(calleeName)) {
+            return
+          }
+
+          // Flag if too many arguments
+          if (n.arguments.length > maxCallArgs) {
             context.report({
               node: n,
               messageId: 'complexExpression',
               data: { url: VUE_STYLE_GUIDE },
             })
+            return
           }
+
+          // Flag if any argument is complex (ternary, logical, nested call)
+          if (n.arguments.some(isComplexArg)) {
+            context.report({
+              node: n,
+              messageId: 'complexExpression',
+              data: { url: VUE_STYLE_GUIDE },
+            })
+            return
+          }
+
+          // Simple call with ≤ maxCallArgs simple arguments — allowed
+          return
         }
         
         // Recursively check all child nodes
@@ -150,3 +196,4 @@ export default {
     )
   },
 }
+

@@ -25,6 +25,7 @@ const ruleTester = new RuleTester({
 
 ruleTester.run('no-template-complex-expressions', rule, {
   valid: [
+    // Simple variable reference
     {
       filename: 'test.vue',
       code: `
@@ -33,6 +34,7 @@ ruleTester.run('no-template-complex-expressions', rule, {
         </template>
       `,
     },
+    // Whitelisted function call
     {
       filename: 'test.vue',
       code: `
@@ -41,13 +43,92 @@ ruleTester.run('no-template-complex-expressions', rule, {
         </template>
       `,
     },
+    // Single-arg function call (not whitelisted — allowed by maxCallArgs default)
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <div>{{ entryStatus(entry) }}</div>
+        </template>
+      `,
+    },
+    // Single-arg call with property access argument
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <div>{{ formatTime(entry.timestamp) }}</div>
+        </template>
+      `,
+    },
+    // Single-arg call in event handler
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <button @click="handleDelete(item.id)">Delete</button>
+        </template>
+      `,
+    },
+    // Zero-arg function call
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <div>{{ getData() }}</div>
+        </template>
+      `,
+    },
   ],
   invalid: [
+    // Nested ternary (still flagged)
     {
       filename: 'test.vue',
       code: `
         <template>
           <div>{{ a ? b ? c : d : e }}</div>
+        </template>
+      `,
+      errors: [
+        {
+          messageId: 'complexExpression',
+        },
+      ],
+    },
+    // Multi-arg function call (exceeds maxCallArgs default of 1)
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <div>{{ calculate(a, b, c) }}</div>
+        </template>
+      `,
+      errors: [
+        {
+          messageId: 'complexExpression',
+        },
+      ],
+    },
+    // Single-arg call with complex argument (ternary inside)
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <div>{{ doStuff(a ? b : c) }}</div>
+        </template>
+      `,
+      errors: [
+        {
+          messageId: 'complexExpression',
+        },
+      ],
+    },
+    // Single-arg call with nested function call argument
+    {
+      filename: 'test.vue',
+      code: `
+        <template>
+          <div>{{ outer(inner(x)) }}</div>
         </template>
       `,
       errors: [

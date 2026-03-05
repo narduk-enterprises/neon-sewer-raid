@@ -75,7 +75,7 @@ var no_legacy_head_default = {
     }
   },
   create(context) {
-    const parserServices = context.sourceCode?.parserServices ?? context.parserServices;
+    const parserServices = context.sourceCode?.parserServices;
     if (!parserServices || !parserServices.defineTemplateBodyVisitor) {
       return {};
     }
@@ -132,7 +132,7 @@ var no_legacy_fetch_hook_default = {
     }
   },
   create(context) {
-    const parserServices = context.sourceCode?.parserServices ?? context.parserServices;
+    const parserServices = context.sourceCode?.parserServices;
     if (!parserServices || !parserServices.defineTemplateBodyVisitor) {
       return {};
     }
@@ -157,8 +157,58 @@ var no_legacy_fetch_hook_default = {
   }
 };
 
+// src/rules/no-raw-fetch.ts
+var DOC_URL = "https://nuxt.com/docs/api/composables/use-fetch";
+var no_raw_fetch_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "disallow raw $fetch in script \u2014 use useAsyncData or useFetch for SSR-safe data fetching",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [
+      {
+        type: "object",
+        properties: {
+          /** When true, run the rule regardless of filename (for testing). */
+          testMode: { type: "boolean", default: false }
+        },
+        additionalProperties: false
+      }
+    ],
+    messages: {
+      rawFetch: "Raw $fetch causes double-fetch and hydration issues. Use useAsyncData() or useFetch() instead. See: " + DOC_URL
+    }
+  },
+  create(context) {
+    const options = context.options[0];
+    const testMode = options?.testMode === true;
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!testMode && normalized) {
+      const inPages = normalized.includes("/app/pages/");
+      const inComponents = normalized.includes("/app/components/");
+      if (!inPages && !inComponents) return {};
+      if (normalized.includes("e2e/") || normalized.includes(".spec.") || normalized.includes(".test.")) return {};
+    }
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        if (!callee) return;
+        const name = callee.type === "Identifier" ? callee.name : callee.type === "MemberExpression" && callee.property?.type === "Identifier" ? callee.property.name : null;
+        if (name !== "$fetch") return;
+        context.report({
+          node: callee,
+          messageId: "rawFetch"
+        });
+      }
+    };
+  }
+};
+
 // src/utils/ast-utils.ts
-function isInClientContext(node, context) {
+function isInClientContext(node, _context) {
   let current = node.parent;
   while (current) {
     if (current.type === "IfStatement" && current.test && (isImportMetaClient(current.test) || isImportMetaServer(current.test))) {
@@ -264,6 +314,52 @@ var prefer_import_meta_client_default = {
             fix(fixer) {
               return fixer.replaceText(node, "import.meta.server");
             }
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/prefer-import-meta-dev.ts
+var prefer_import_meta_dev_default = {
+  meta: {
+    type: "suggestion",
+    docs: {
+      description: "prefer import.meta.dev over process.env.NODE_ENV for Vite/Nitro and Cloudflare Workers",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [
+      {
+        type: "object",
+        properties: {
+          /** When true, run the rule regardless of filename (for testing). */
+          testMode: { type: "boolean", default: false }
+        },
+        additionalProperties: false
+      }
+    ],
+    messages: {
+      useImportMetaDev: "Use import.meta.dev instead of process.env.NODE_ENV (reliable in Workers/Vite)."
+    }
+  },
+  create(context) {
+    const options = context.options[0];
+    const testMode = options?.testMode === true;
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!testMode && normalized && !normalized.includes("/server/") && !normalized.includes("/app/")) {
+      return {};
+    }
+    return {
+      MemberExpression(node) {
+        const obj = node.object;
+        const prop = node.property;
+        if (obj?.type === "MemberExpression" && obj.object?.type === "Identifier" && obj.object.name === "process" && obj.property?.type === "Identifier" && obj.property.name === "env" && prop?.type === "Identifier" && prop.name === "NODE_ENV") {
+          context.report({
+            node,
+            messageId: "useImportMetaDev"
           });
         }
       }
@@ -593,7 +689,6 @@ var app_structure_consistency_default = {
     type: "suggestion",
     docs: {
       description: "enforce consistent directory structure",
-      category: "Best Practices",
       recommended: true
     },
     schema: [
@@ -637,6 +732,484 @@ var app_structure_consistency_default = {
   }
 };
 
+// src/rules/require-use-seo-on-pages.ts
+var require_use_seo_on_pages_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "require useSeo() in app/pages/*.vue for consistent SEO",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      missingUseSeo: "Page must call useSeo() for title, description, and OG image. See template SEO docs."
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/app/pages/") || !normalized.endsWith(".vue")) return {};
+    let hasUseSeo = false;
+    return {
+      CallExpression(node) {
+        const name = node.callee?.type === "Identifier" ? node.callee.name : null;
+        if (name === "useSeo") hasUseSeo = true;
+      },
+      "Program:exit"(node) {
+        if (!hasUseSeo) {
+          context.report({
+            node,
+            messageId: "missingUseSeo"
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/prefer-use-seo-over-bare-meta.ts
+var BARE_META = /* @__PURE__ */ new Set(["useSeoMeta", "useHead"]);
+var prefer_use_seo_over_bare_meta_default = {
+  meta: {
+    type: "suggestion",
+    docs: {
+      description: "prefer useSeo() over bare useSeoMeta/useHead in pages",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      preferUseSeo: "Use useSeo() instead of {{ name }}() for consistent SEO. See template SEO docs."
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/app/pages/") || !normalized.endsWith(".vue")) return {};
+    return {
+      CallExpression(node) {
+        const name = node.callee?.type === "Identifier" ? node.callee.name : null;
+        if (name && BARE_META.has(name)) {
+          context.report({
+            node: node.callee,
+            messageId: "preferUseSeo",
+            data: { name }
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/require-schema-on-pages.ts
+var SCHEMA_COMPOSABLES = /* @__PURE__ */ new Set([
+  "useWebPageSchema",
+  "useArticleSchema",
+  "useProductSchema",
+  "useOrganizationSchema",
+  "usePersonSchema",
+  "useBreadcrumbSchema"
+]);
+var require_schema_on_pages_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "require a Schema.org composable in app/pages/*.vue",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      missingSchema: "Page should call a Schema.org composable (e.g. useWebPageSchema, useArticleSchema). See template SEO docs."
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/app/pages/") || !normalized.endsWith(".vue")) return {};
+    let hasSchema = false;
+    return {
+      CallExpression(node) {
+        const name = node.callee?.type === "Identifier" ? node.callee.name : null;
+        if (name && SCHEMA_COMPOSABLES.has(name)) hasSchema = true;
+      },
+      "Program:exit"(node) {
+        if (!hasSchema) {
+          context.report({
+            node,
+            messageId: "missingSchema"
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/no-map-async-in-server.ts
+var no_map_async_in_server_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "disallow .map(async in server code \u2014 use batched queries to avoid N+1",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      mapAsync: '.map(async ...) in server code often causes N+1 queries. Prefer batched queries (e.g. .in("id", ids)).'
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/server/")) return {};
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        if (!callee || callee.type !== "MemberExpression") return;
+        const prop = callee.property;
+        if (prop?.type !== "Identifier" || prop.name !== "map") return;
+        const args = node.arguments;
+        if (args.length === 0) return;
+        const first = args[0];
+        if (!first || first.type !== "ArrowFunctionExpression" && first.type !== "FunctionExpression") return;
+        if (first.async) {
+          context.report({
+            node: callee.property,
+            messageId: "mapAsync"
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/no-raw-fetch-in-stores.ts
+var no_raw_fetch_in_stores_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "disallow $fetch/useFetch in app/stores \u2014 use useAppFetch or useRequestFetch",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      rawFetchInStore: "Stores must use useAppFetch() or useRequestFetch() for SSR cookie/auth proxying. Avoid $fetch/useFetch in app/stores/."
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/app/stores/") || !normalized.endsWith(".ts")) return {};
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        const name = callee?.type === "Identifier" ? callee.name : callee?.type === "MemberExpression" && callee.property?.type === "Identifier" ? callee.property.name : null;
+        if (name !== "$fetch" && name !== "useFetch") return;
+        context.report({
+          node: callee,
+          messageId: "rawFetchInStore"
+        });
+      }
+    };
+  }
+};
+
+// src/rules/plugin-suffix-for-browser-apis.ts
+var BROWSER_GLOBALS = /* @__PURE__ */ new Set([
+  "window",
+  "document",
+  "localStorage",
+  "sessionStorage",
+  "navigator"
+]);
+function referencesBrowserApi(node) {
+  if (node.type === "MemberExpression") {
+    const name = node.object?.type === "Identifier" ? node.object.name : null;
+    if (name && BROWSER_GLOBALS.has(name)) return true;
+  }
+  return false;
+}
+var plugin_suffix_for_browser_apis_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "plugins using browser APIs must use .client.ts suffix",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      useClientSuffix: "This plugin uses browser APIs (window/document/storage/navigator). Use a .client.ts suffix so it only runs on the client."
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/app/plugins/") || !normalized.endsWith(".ts")) return {};
+    if (normalized.includes(".client.") || normalized.includes(".server.")) return {};
+    let hasBrowserApi = false;
+    return {
+      MemberExpression(node) {
+        if (referencesBrowserApi(node)) hasBrowserApi = true;
+      },
+      "Program:exit"(node) {
+        if (hasBrowserApi) {
+          context.report({
+            node,
+            messageId: "useClientSuffix"
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/no-non-serializable-store-state.ts
+var no_non_serializable_store_state_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "disallow ref<Map>/ref<Set>/new Map()/new Set() in app/stores for SSR serialization",
+      category: "Best Practices",
+      recommended: true
+    },
+    schema: [],
+    messages: {
+      nonSerializable: "Store state must be serializable for SSR. Avoid Map, Set, Date, or class instances. Use plain objects/arrays or shallowRef + skipHydrate if needed."
+    }
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!normalized.includes("/app/stores/") || !normalized.endsWith(".ts")) return {};
+    function isMapOrSetType(node) {
+      if (node?.type === "TSTypeReference" && node.typeName?.type === "Identifier") {
+        const n = node.typeName.name;
+        return n === "Map" || n === "Set";
+      }
+      return false;
+    }
+    return {
+      // ref<Map>, ref<Set> — ref() call with type args
+      CallExpression(node) {
+        const callee = node.callee;
+        const name = callee?.type === "Identifier" ? callee.name : null;
+        if (name !== "ref" && name !== "shallowRef") return {};
+        const typeArgs = node.typeArguments?.params ?? node.typeParameters?.params ?? [];
+        for (const t of typeArgs) {
+          if (isMapOrSetType(t)) {
+            context.report({ node: callee, messageId: "nonSerializable" });
+            return;
+          }
+        }
+      },
+      // new Map(), new Set()
+      NewExpression(node) {
+        const name = node.callee?.type === "Identifier" ? node.callee.name : null;
+        if (name === "Map" || name === "Set") {
+          context.report({ node: node.callee, messageId: "nonSerializable" });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/require-csrf-header-on-mutations.ts
+var MUTATION_METHODS = /* @__PURE__ */ new Set(["POST", "PUT", "PATCH", "DELETE"]);
+function isMutationMethod(node) {
+  if (!node) return false;
+  if (node.type === "Literal" && typeof node.value === "string") {
+    return MUTATION_METHODS.has(node.value.toUpperCase());
+  }
+  if (node.type === "TemplateLiteral" && node.expressions.length === 0 && node.quasis.length === 1) {
+    return MUTATION_METHODS.has(node.quasis[0].value.raw.toUpperCase());
+  }
+  return false;
+}
+function hasXRequestedWithHeader(headersNode) {
+  if (!headersNode) return false;
+  if (headersNode.type === "ObjectExpression") {
+    return headersNode.properties.some((prop) => {
+      if (prop.type !== "Property") return false;
+      const key = prop.key;
+      const keyName = key.type === "Identifier" ? key.name : key.type === "Literal" ? key.value : null;
+      return keyName === "X-Requested-With";
+    });
+  }
+  if (headersNode.type === "Identifier") return true;
+  if (headersNode.type === "ObjectExpression") {
+    return headersNode.properties.some((p) => p.type === "SpreadElement");
+  }
+  return false;
+}
+var require_csrf_header_on_mutations_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "mutation $fetch calls in composables must include X-Requested-With header for CSRF protection",
+      category: "Security",
+      recommended: true
+    },
+    schema: [
+      {
+        type: "object",
+        properties: {
+          testMode: { type: "boolean", default: false }
+        },
+        additionalProperties: false
+      }
+    ],
+    messages: {
+      missingCsrf: "Mutation $fetch calls in composables must include { headers: { 'X-Requested-With': 'XMLHttpRequest' } } for CSRF protection, or use useNuxtApp().$csrfFetch."
+    }
+  },
+  create(context) {
+    const options = context.options[0];
+    const testMode = options?.testMode === true;
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!testMode && normalized) {
+      if (!normalized.includes("/app/composables/")) return {};
+      if (!normalized.endsWith(".ts")) return {};
+    }
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        if (!callee) return;
+        const name = callee.type === "Identifier" ? callee.name : null;
+        if (name !== "$fetch") return;
+        if (node.arguments.length < 2) return;
+        const optionsArg = node.arguments[1];
+        if (!optionsArg || optionsArg.type !== "ObjectExpression") return;
+        const methodProp = optionsArg.properties.find(
+          (p) => p.type === "Property" && (p.key.type === "Identifier" && p.key.name === "method" || p.key.type === "Literal" && p.key.value === "method")
+        );
+        if (!methodProp) return;
+        if (!isMutationMethod(methodProp.value)) return;
+        const headersProp = optionsArg.properties.find(
+          (p) => p.type === "Property" && (p.key.type === "Identifier" && p.key.name === "headers" || p.key.type === "Literal" && p.key.value === "headers")
+        );
+        if (!headersProp || !hasXRequestedWithHeader(headersProp.value)) {
+          context.report({
+            node: callee,
+            messageId: "missingCsrf"
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/no-csrf-exempt-route-misuse.ts
+var EXEMPT_PREFIXES = ["/api/webhooks/", "/api/cron/", "/api/callbacks/"];
+function matchesExemptPrefix(filepath) {
+  const normalized = filepath.replace(/\\/g, "/");
+  return EXEMPT_PREFIXES.some((prefix) => {
+    const serverPrefix = `server${prefix}`;
+    return normalized.includes(serverPrefix);
+  });
+}
+var no_csrf_exempt_route_misuse_default = {
+  meta: {
+    type: "suggestion",
+    docs: {
+      description: "routes under CSRF-exempt prefixes should validate a shared secret or signature",
+      category: "Security",
+      recommended: true
+    },
+    schema: [
+      {
+        type: "object",
+        properties: {
+          testMode: { type: "boolean", default: false }
+        },
+        additionalProperties: false
+      }
+    ],
+    messages: {
+      missingSecretValidation: "Routes under /api/webhooks/, /api/cron/, or /api/callbacks/ bypass CSRF protection. Ensure this route validates a shared secret or signature via getHeader(). If this is user-facing, move it outside the exempt prefix."
+    }
+  },
+  create(context) {
+    const options = context.options[0];
+    const testMode = options?.testMode === true;
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!testMode && !matchesExemptPrefix(normalized)) return {};
+    let hasReadBody = false;
+    let hasGetHeader = false;
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        if (!callee) return;
+        const name = callee.type === "Identifier" ? callee.name : null;
+        if (name === "readBody") hasReadBody = true;
+        if (name === "getHeader") hasGetHeader = true;
+      },
+      "Program:exit"(node) {
+        if (hasReadBody && !hasGetHeader) {
+          context.report({
+            node,
+            messageId: "missingSecretValidation"
+          });
+        }
+      }
+    };
+  }
+};
+
+// src/rules/no-fetch-create-bypass.ts
+var no_fetch_create_bypass_default = {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "$fetch.create() bypasses the layer CSRF header injection \u2014 use $csrfFetch instead",
+      category: "Security",
+      recommended: true
+    },
+    schema: [
+      {
+        type: "object",
+        properties: {
+          testMode: { type: "boolean", default: false }
+        },
+        additionalProperties: false
+      }
+    ],
+    messages: {
+      fetchCreateBypass: "$fetch.create() bypasses the layer's CSRF header injection. Use useNuxtApp().$csrfFetch or the globally patched $fetch instead."
+    }
+  },
+  create(context) {
+    const options = context.options[0];
+    const testMode = options?.testMode === true;
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    const normalized = filename.replace(/\\/g, "/");
+    if (!testMode) {
+      if (!normalized.includes("/app/")) return {};
+      if (normalized.includes("plugins/fetch.client.")) return {};
+      if (normalized.includes(".test.") || normalized.includes(".spec.") || normalized.includes("e2e/")) return {};
+    }
+    return {
+      CallExpression(node) {
+        const callee = node.callee;
+        if (!callee || callee.type !== "MemberExpression") return;
+        const obj = callee.object;
+        const prop = callee.property;
+        if (obj?.type === "Identifier" && obj.name === "$fetch" && prop?.type === "Identifier" && prop.name === "create") {
+          context.report({
+            node: callee,
+            messageId: "fetchCreateBypass"
+          });
+        }
+      }
+    };
+  }
+};
+
 // src/index.ts
 var index_default = {
   meta: {
@@ -646,11 +1219,23 @@ var index_default = {
   rules: {
     "no-legacy-head": no_legacy_head_default,
     "no-legacy-fetch-hook": no_legacy_fetch_hook_default,
+    "no-raw-fetch": no_raw_fetch_default,
     "prefer-import-meta-client": prefer_import_meta_client_default,
+    "prefer-import-meta-dev": prefer_import_meta_dev_default,
     "no-ssr-dom-access": no_ssr_dom_access_default,
     "valid-useAsyncData": valid_useAsyncData_default,
     "valid-useFetch": valid_useFetch_default,
-    "app-structure-consistency": app_structure_consistency_default
+    "app-structure-consistency": app_structure_consistency_default,
+    "require-use-seo-on-pages": require_use_seo_on_pages_default,
+    "prefer-use-seo-over-bare-meta": prefer_use_seo_over_bare_meta_default,
+    "require-schema-on-pages": require_schema_on_pages_default,
+    "no-map-async-in-server": no_map_async_in_server_default,
+    "no-raw-fetch-in-stores": no_raw_fetch_in_stores_default,
+    "plugin-suffix-for-browser-apis": plugin_suffix_for_browser_apis_default,
+    "no-non-serializable-store-state": no_non_serializable_store_state_default,
+    "require-csrf-header-on-mutations": require_csrf_header_on_mutations_default,
+    "no-csrf-exempt-route-misuse": no_csrf_exempt_route_misuse_default,
+    "no-fetch-create-bypass": no_fetch_create_bypass_default
   },
   configs: {
     recommended: {
@@ -658,11 +1243,23 @@ var index_default = {
       rules: {
         "nuxt-guardrails/no-legacy-head": "warn",
         "nuxt-guardrails/no-legacy-fetch-hook": "error",
+        "nuxt-guardrails/no-raw-fetch": "error",
         "nuxt-guardrails/prefer-import-meta-client": "warn",
+        "nuxt-guardrails/prefer-import-meta-dev": "warn",
         "nuxt-guardrails/no-ssr-dom-access": "error",
         "nuxt-guardrails/valid-useAsyncData": "warn",
         "nuxt-guardrails/valid-useFetch": "warn",
-        "nuxt-guardrails/app-structure-consistency": "warn"
+        "nuxt-guardrails/app-structure-consistency": "warn",
+        "nuxt-guardrails/require-use-seo-on-pages": "warn",
+        "nuxt-guardrails/prefer-use-seo-over-bare-meta": "warn",
+        "nuxt-guardrails/require-schema-on-pages": "warn",
+        "nuxt-guardrails/no-map-async-in-server": "warn",
+        "nuxt-guardrails/no-raw-fetch-in-stores": "error",
+        "nuxt-guardrails/plugin-suffix-for-browser-apis": "error",
+        "nuxt-guardrails/no-non-serializable-store-state": "warn",
+        "nuxt-guardrails/require-csrf-header-on-mutations": "error",
+        "nuxt-guardrails/no-csrf-exempt-route-misuse": "warn",
+        "nuxt-guardrails/no-fetch-create-bypass": "error"
       }
     }
   }

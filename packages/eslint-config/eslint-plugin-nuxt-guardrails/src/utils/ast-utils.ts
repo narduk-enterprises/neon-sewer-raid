@@ -3,14 +3,14 @@
  */
 
 import type { AST } from 'vue-eslint-parser'
-import type { RuleContext } from 'eslint'
+import type { Rule } from 'eslint'
 
 /**
  * Check if a node is in a client-only context
  */
 export function isInClientContext(
   node: any,
-  context: RuleContext<string, any[]>
+  _context: Rule.RuleContext
 ): boolean {
   let current: any = node.parent
   

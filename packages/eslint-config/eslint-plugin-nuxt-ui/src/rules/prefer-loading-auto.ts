@@ -27,7 +27,7 @@ interface RuleContext {
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer loading-auto prop on UButton for automatic loading state',
       category: 'Best Practices',

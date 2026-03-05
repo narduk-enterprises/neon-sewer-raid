@@ -9,7 +9,7 @@ import { VUE_BEST_PRACTICES } from '../utils/vue-docs-urls'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer shallow watch over deep watch',
       category: 'Performance',

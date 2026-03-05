@@ -11,10 +11,9 @@ import type { PluginOptions } from '../types'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'enforce consistent directory structure',
-      category: 'Best Practices',
       recommended: true,
     },
     schema: [
@@ -34,7 +33,7 @@ export default {
       conflictingStructure: 'Found both app/pages/ and pages/ directories. This may cause routing conflicts. Prefer app/ structure for Nuxt 4. See: https://nuxt.com/docs/4.x/guide/directory-structure/app',
     },
   },
-  create(context: Rule.RuleContext<string, PluginOptions[]>): Rule.RuleListener {
+  create(context: Rule.RuleContext): Rule.RuleListener {
     const options = context.options[0] || {}
     const projectStyle = options.projectStyle || 'auto'
     
@@ -63,4 +62,4 @@ export default {
       },
     }
   },
-}
+} satisfies Rule.RuleModule

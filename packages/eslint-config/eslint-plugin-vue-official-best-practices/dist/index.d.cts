@@ -11,7 +11,7 @@ declare const _default: {
     rules: {
         'require-script-setup': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -35,7 +35,7 @@ declare const _default: {
         };
         'no-setup-top-level-side-effects': {
             meta: {
-                type: string;
+                type: "problem";
                 docs: {
                     description: string;
                     category: string;
@@ -52,7 +52,7 @@ declare const _default: {
         };
         'no-async-computed-getter': {
             meta: {
-                type: string;
+                type: "problem";
                 docs: {
                     description: string;
                     category: string;
@@ -68,7 +68,7 @@ declare const _default: {
         };
         'prefer-shallow-watch': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -92,7 +92,7 @@ declare const _default: {
         };
         'no-template-complex-expressions': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -107,6 +107,10 @@ declare const _default: {
                             default: number;
                         };
                         maxLogicalOps: {
+                            type: string;
+                            default: number;
+                        };
+                        maxCallArgs: {
                             type: string;
                             default: number;
                         };
@@ -127,7 +131,7 @@ declare const _default: {
         };
         'consistent-defineprops-emits': {
             meta: {
-                type: string;
+                type: "problem";
                 docs: {
                     description: string;
                     category: string;
@@ -145,7 +149,7 @@ declare const _default: {
         };
         'prefer-typed-defineprops': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -161,7 +165,7 @@ declare const _default: {
         };
         'require-use-prefix-for-composables': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -188,7 +192,7 @@ declare const _default: {
         };
         'no-composable-conditional-hooks': {
             meta: {
-                type: string;
+                type: "problem";
                 docs: {
                     description: string;
                     category: string;
@@ -204,7 +208,7 @@ declare const _default: {
         };
         'no-composable-dom-access-without-client-guard': {
             meta: {
-                type: string;
+                type: "problem";
                 docs: {
                     description: string;
                     category: string;
@@ -228,7 +232,7 @@ declare const _default: {
         };
         'pinia-require-defineStore-id': {
             meta: {
-                type: string;
+                type: "problem";
                 docs: {
                     description: string;
                     category: string;
@@ -244,7 +248,7 @@ declare const _default: {
         };
         'pinia-no-direct-state-mutation-outside-actions': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -268,7 +272,7 @@ declare const _default: {
         };
         'pinia-prefer-storeToRefs-destructure': {
             meta: {
-                type: string;
+                type: "suggestion";
                 docs: {
                     description: string;
                     category: string;
@@ -276,7 +280,7 @@ declare const _default: {
                     url: string;
                 };
                 schema: never[];
-                fixable: string;
+                fixable: "code";
                 messages: {
                     preferStoreToRefs: string;
                 };

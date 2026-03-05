@@ -69,7 +69,7 @@ function isValidAsyncDataKey(node: any): boolean {
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'enforce valid useAsyncData usage',
       category: 'Best Practices',
@@ -94,7 +94,7 @@ export default {
       callbackReturnsNothing: 'useAsyncData callback should return a value. See: {{docUrl}}',
     },
   },
-  create(context: Rule.RuleContext<string, PluginOptions[]>): Rule.RuleListener {
+  create(context: Rule.RuleContext): Rule.RuleListener {
     const options = context.options[0] || {}
     const requireStableKeys = options.requireStableAsyncDataKeys !== false
     

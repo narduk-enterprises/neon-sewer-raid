@@ -15,7 +15,6 @@ function getDirname(): string {
   } catch {
     // CJS fallback
     try {
-      // @ts-expect-error - CJS context
       return __dirname
     } catch {
       return process.cwd()

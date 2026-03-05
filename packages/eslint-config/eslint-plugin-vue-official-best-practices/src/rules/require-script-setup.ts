@@ -9,7 +9,7 @@ import { VUE_STYLE_GUIDE } from '../utils/vue-docs-urls'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer <script setup> over Options API',
       category: 'Best Practices',

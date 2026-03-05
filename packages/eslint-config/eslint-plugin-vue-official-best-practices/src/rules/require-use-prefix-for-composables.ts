@@ -11,7 +11,7 @@ const DEFAULT_COMPOSABLE_PATHS = ['**/composables/**/*.ts', '**/composables/**/*
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'require composable functions to use "use" prefix',
       category: 'Best Practices',

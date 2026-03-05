@@ -7,7 +7,7 @@
     "build:plugins": "pnpm --filter @narduk/eslint-config build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "quality": "pnpm -r quality",
+    "quality": "turbo run quality --filter='./apps/*'",
     "init": "jiti tools/init.ts",
     "validate": "jiti tools/validate.ts",
     "predev": "node tools/check-setup.cjs",
@@ -44,7 +44,8 @@
   "devDependencies": {
     "google-auth-library": "^10.6.1",
     "googleapis": "^171.4.0",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "turbo": "^2.8.12"
   },
   "version": "0.0.14"
 }

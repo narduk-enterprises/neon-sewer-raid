@@ -9,7 +9,7 @@ import { getApiSpec } from '../utils/spec-loader'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow legacy Nuxt 2 fetch() hook',
       category: 'Best Practices',
@@ -20,8 +20,8 @@ export default {
       legacyFetch: 'Use useFetch() or useAsyncData() instead of fetch() hook. See: {{docUrl}}',
     },
   },
-  create(context: Rule.RuleContext<string, any[]>): Rule.RuleListener {
-    const parserServices = (context.sourceCode?.parserServices ?? context.parserServices) as any
+  create(context: Rule.RuleContext): Rule.RuleListener {
+    const parserServices = context.sourceCode?.parserServices as any
     
     if (!parserServices || !parserServices.defineTemplateBodyVisitor) {
       return {}

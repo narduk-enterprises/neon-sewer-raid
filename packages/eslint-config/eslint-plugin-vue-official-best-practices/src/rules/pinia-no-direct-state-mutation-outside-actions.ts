@@ -9,7 +9,7 @@ import { PINIA_DOCS } from '../utils/vue-docs-urls'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'disallow direct state mutation outside store actions',
       category: 'Best Practices',

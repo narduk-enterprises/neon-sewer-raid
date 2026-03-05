@@ -74,13 +74,13 @@ export interface RuleContext {
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow deprecated events on Nuxt UI components',
       category: 'Possible Errors',
       recommended: true,
     },
-    fixable: 'code',
+    fixable: 'code' as const,
     schema: [
       {
         type: 'object',

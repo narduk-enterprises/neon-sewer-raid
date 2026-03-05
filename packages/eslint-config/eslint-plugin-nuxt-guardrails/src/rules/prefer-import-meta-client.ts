@@ -10,13 +10,13 @@ import type { PluginOptions } from '../types'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer import.meta.client/server over process.client/server',
       category: 'Best Practices',
       recommended: true,
     },
-    fixable: 'code',
+    fixable: 'code' as const,
     schema: [
       {
         type: 'object',
@@ -34,7 +34,7 @@ export default {
       preferImportMetaServer: 'Use import.meta.server instead of process.server. See: https://nuxt.com/docs/4.x/guide/concepts/rendering',
     },
   },
-  create(context: Rule.RuleContext<string, PluginOptions[]>): Rule.RuleListener {
+  create(context: Rule.RuleContext): Rule.RuleListener {
     const options = context.options[0] || {}
     const allowProcessClientServer = options.allowProcessClientServer || false
     

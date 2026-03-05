@@ -11,21 +11,21 @@ import { getApiSpec } from '../utils/spec-loader'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow legacy Options API head() method or head option',
       category: 'Best Practices',
       recommended: true,
     },
-    fixable: 'code',
+    fixable: 'code' as const,
     schema: [],
     messages: {
       legacyHeadMethod: 'Use useHead() composable instead of head() method. See: {{docUrl}}',
       legacyHeadOption: 'Use useHead() composable instead of head option. See: {{docUrl}}',
     },
   },
-  create(context: Rule.RuleContext<string, any[]>): Rule.RuleListener {
-    const parserServices = (context.sourceCode?.parserServices ?? context.parserServices) as any
+  create(context: Rule.RuleContext): Rule.RuleListener {
+    const parserServices = context.sourceCode?.parserServices as any
     
     // Only process Vue files
     if (!parserServices || !parserServices.defineTemplateBodyVisitor) {

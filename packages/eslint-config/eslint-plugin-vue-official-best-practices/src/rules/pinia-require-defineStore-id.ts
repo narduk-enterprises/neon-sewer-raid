@@ -10,7 +10,7 @@ import { isLiteral } from '../utils/ast-utils'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'require defineStore to have a string literal id',
       category: 'Best Practices',

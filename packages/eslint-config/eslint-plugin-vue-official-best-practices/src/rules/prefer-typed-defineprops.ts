@@ -9,7 +9,7 @@ import { VUE_TYPESCRIPT_GUIDE } from '../utils/vue-docs-urls'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer typed defineProps in TypeScript',
       category: 'Best Practices',

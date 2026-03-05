@@ -9,7 +9,7 @@ import { getApiSpec } from '../utils/spec-loader'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'enforce valid useFetch usage',
       category: 'Best Practices',
@@ -21,7 +21,7 @@ export default {
       invalidOptions: 'useFetch options may be invalid. See: {{docUrl}}',
     },
   },
-  create(context: Rule.RuleContext<string, any[]>): Rule.RuleListener {
+  create(context: Rule.RuleContext): Rule.RuleListener {
     const useFetchSpec = getApiSpec('useFetch')
     const docUrl = useFetchSpec?.docUrl || 'https://nuxt.com/docs/api/composables/use-fetch'
     

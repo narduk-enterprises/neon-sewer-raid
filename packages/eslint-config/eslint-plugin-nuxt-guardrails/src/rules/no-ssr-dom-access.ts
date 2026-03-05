@@ -9,7 +9,7 @@ import { isDomAccess, isInClientContext, isImportMetaClient } from '../utils/ast
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow unguarded DOM access in server context',
       category: 'Best Practices',
@@ -20,7 +20,7 @@ export default {
       unguardedDomAccess: 'Unguarded {{type}} access may cause SSR errors. Use onMounted() or guard with import.meta.client. See: https://nuxt.com/docs/4.x/guide/concepts/rendering',
     },
   },
-  create(context: Rule.RuleContext<string, any[]>): Rule.RuleListener {
+  create(context: Rule.RuleContext): Rule.RuleListener {
     const filename = context.filename ?? (context as any).getFilename?.() ?? ''
     const parserServices = (context.sourceCode?.parserServices ?? (context as any).parserServices) as any
     

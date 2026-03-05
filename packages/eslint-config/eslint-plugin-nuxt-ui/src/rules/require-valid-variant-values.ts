@@ -29,7 +29,7 @@ export interface RuleContext {
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'require valid variant values for Nuxt UI component props',
       category: 'Possible Errors',

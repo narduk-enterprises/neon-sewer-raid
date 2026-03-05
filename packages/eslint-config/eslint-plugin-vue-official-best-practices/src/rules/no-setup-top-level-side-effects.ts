@@ -11,7 +11,7 @@ import { isNuxtMode, isAllowedNuxtComposable } from '../utils/nuxt-detection'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow top-level side effects in <script setup>',
       category: 'Best Practices',

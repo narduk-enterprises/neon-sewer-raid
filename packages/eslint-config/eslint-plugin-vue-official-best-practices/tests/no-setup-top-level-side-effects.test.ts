@@ -64,7 +64,7 @@ ruleTester.run('no-setup-top-level-side-effects', rule, {
       `,
       errors: [
         {
-          messageId: 'useNuxtComposable',
+          messageId: 'noTopLevelSideEffect',
         },
       ],
     },

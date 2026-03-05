@@ -27,13 +27,13 @@ interface RuleContext {
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer UForm over native form element for better Nuxt UI integration',
       category: 'Best Practices',
       recommended: true,
     },
-    fixable: 'code',
+    fixable: 'code' as const,
     schema: [],
     messages: {
       preferUForm: 'Use <UForm> instead of native <form> for validation and loading-auto support. See: https://ui.nuxt.com/components/form',

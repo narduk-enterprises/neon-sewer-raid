@@ -10,7 +10,7 @@ import { isDomAccess, isInClientContext } from '../utils/ast-utils'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'require client guard for DOM access in composables',
       category: 'Best Practices',

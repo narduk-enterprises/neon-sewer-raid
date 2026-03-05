@@ -31,7 +31,7 @@ const VUE_COMPOSABLES = [
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow conditional calls to Vue composables in composables',
       category: 'Best Practices',

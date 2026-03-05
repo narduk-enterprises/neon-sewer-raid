@@ -9,7 +9,7 @@ import { PINIA_DOCS } from '../utils/vue-docs-urls'
 
 export default {
   meta: {
-    type: 'suggestion',
+    type: 'suggestion' as const,
     docs: {
       description: 'prefer storeToRefs when destructuring reactive store properties',
       category: 'Best Practices',
@@ -17,7 +17,7 @@ export default {
       url: PINIA_DOCS,
     },
     schema: [],
-    fixable: 'code',
+    fixable: 'code' as const,
     messages: {
       preferStoreToRefs: 'Destructure reactive store properties with storeToRefs() to maintain reactivity. See: {{url}}',
     },

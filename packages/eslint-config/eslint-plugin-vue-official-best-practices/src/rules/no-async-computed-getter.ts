@@ -9,7 +9,7 @@ import { VUE_COMPOSITION_API } from '../utils/vue-docs-urls'
 
 export default {
   meta: {
-    type: 'problem',
+    type: 'problem' as const,
     docs: {
       description: 'disallow async computed getters',
       category: 'Best Practices',

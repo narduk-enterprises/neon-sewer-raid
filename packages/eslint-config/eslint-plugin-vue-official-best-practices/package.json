@@ -39,8 +39,10 @@
     "@types/node": "^20.0.0"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^8.56.1",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
+    "vitest": "^4.0.18",
     "vue-eslint-parser": "^10.2.0"
   },
   "engines": {
