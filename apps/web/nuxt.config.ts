@@ -28,13 +28,14 @@ export default defineNuxtConfig({
       posthogProjectId: process.env.POSTHOG_PROJECT_ID || '',
       // IndexNow
       indexNowKey: process.env.INDEXNOW_KEY || '',
-    }
+    },
   },
 
   site: {
     url: process.env.SITE_URL || 'https://neon-sewer-raid.workers.dev',
     name: 'Neon Sewer Raid',
-    description: 'An arcade action game. Fight robots, bats, ninjas, and the Rat King in neon-lit sewers! Built with Nuxt 4 and Cloudflare Workers.',
+    description:
+      'An arcade action game. Fight robots, bats, ninjas, and the Rat King in neon-lit sewers! Built with Nuxt 4 and Cloudflare Workers.',
     defaultLocale: 'en',
   },
 
@@ -55,10 +56,15 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      title: 'Neon Sewer Raid',
       htmlAttrs: { lang: 'en' },
       meta: [
         { name: 'theme-color', content: '#050510' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover' },
+        {
+          name: 'viewport',
+          content:
+            'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover',
+        },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       ],
@@ -69,7 +75,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
     },
-    pageTransition: { name: 'page', mode: 'out-in' }
+    pageTransition: { name: 'page', mode: 'out-in' },
   },
 
   sitemap: {},
