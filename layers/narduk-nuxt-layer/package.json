@@ -5,7 +5,7 @@
   "description": "Narduk Nuxt 4 Layer — shared components, composables, server routes, and Drizzle schema for Cloudflare Workers apps",
   "repository": {
     "type": "git",
-    "url": "https://github.com/narduk-enterprises/neon-sewer-raid",
+    "url": "git@github.com:narduk-enterprises/neon-sewer-raid.git",
     "directory": "layers/narduk-nuxt-layer"
   },
   "publishConfig": {
@@ -24,7 +24,8 @@
     "test:unit": "vitest run",
     "quality": "pnpm run prelint && pnpm run lint && pnpm run typecheck && pnpm run test:unit",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "format:check": "prettier --check \"**/*.{ts,mts,vue,js,mjs,json,yaml,yml,css,md}\" --ignore-path ../../.gitignore"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.15.2",
