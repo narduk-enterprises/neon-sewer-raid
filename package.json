@@ -12,13 +12,15 @@
     "validate": "jiti tools/validate.ts",
     "predev": "node tools/check-setup.cjs",
     "prebuild": "node tools/check-setup.cjs",
-    "preship": "node tools/check-setup.cjs",
-    "ship": "doppler run -- pnpm --filter web run deploy",
+    "preship": "node tools/check-setup.cjs && pnpm run quality",
+    "ship": "git add -A && git diff --cached --quiet || git commit -m \"chore: ship $(date -u +%Y-%m-%dT%H:%M:%SZ)\" && git fetch && (git merge-base --is-ancestor @{u} HEAD || (echo '\\\\n❌ Remote has changes not in local branch. Run: git pull --rebase && pnpm ship\\\\n' && false)) && git push && doppler run -- pnpm --filter web run deploy",
     "update-layer": "npx tsx tools/update-layer.ts",
     "generate:favicons": "npx tsx tools/generate-favicons.ts",
     "postinstall": "node -e \"if(!require('fs').existsSync('.setup-complete'))console.log('\\n⚠️  Run pnpm run setup before doing anything else! See AGENTS.md.\\n')\"",
     "prelint": "pnpm run build:plugins",
-    "predeploy": "node tools/check-setup.cjs"
+    "predeploy": "node tools/check-setup.cjs",
+    "format": "prettier --write \"**/*.{ts,mts,vue,js,mjs,json,yaml,yml,css,md}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,mts,vue,js,mjs,json,yaml,yml,css,md}\" --ignore-path .gitignore"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -49,7 +51,8 @@
     "google-auth-library": "^10.6.1",
     "googleapis": "^171.4.0",
     "tsx": "^4.21.0",
-    "turbo": "^2.8.12"
+    "turbo": "^2.8.12",
+    "prettier": "^3.8.1"
   },
   "version": "0.0.22"
 }
