@@ -12,6 +12,11 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    session: {
+      password:
+        process.env.NUXT_SESSION_PASSWORD ||
+        (import.meta.dev ? 'neon-sewer-raid-dev-session-secret-min-32-chars' : ''),
+    },
     // Server-only (admin API routes)
     googleServiceAccountKey: process.env.GSC_SERVICE_ACCOUNT_JSON || '',
     posthogApiKey: process.env.POSTHOG_PERSONAL_API_KEY || '',
