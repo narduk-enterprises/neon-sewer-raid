@@ -89,7 +89,7 @@ export function useAudio() {
       fetch(`/audio/${name}.mp3`)
         .then(r => r.arrayBuffer())
         .then(b => ctx!.decodeAudioData(b))
-        .then(d => { sounds[name] = d })
+        .then(d => { sounds[name] = d; return d })
         .catch(() => {})
     }
   }
