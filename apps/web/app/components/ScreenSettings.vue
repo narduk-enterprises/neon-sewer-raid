@@ -37,7 +37,7 @@ const game = inject('game') as ReturnType<typeof useGameEngine>
 
     <div class="setting-row">
       <span>Sensitivity</span>
-      <URange
+      <USlider
         :min="0.5" :max="2.0" :step="0.1"
         :model-value="game.sensitivity.value"
         @update:model-value="game.setSensitivity($event)"
